@@ -51,9 +51,9 @@ fun LoginScreen(
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
-                label = { Text("Email") },
+                label = { Text("Email or Username") },
                 singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                // keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email), // Commented out for debugging
                 modifier = Modifier.fillMaxWidth()
             )
 

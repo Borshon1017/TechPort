@@ -78,7 +78,16 @@ fun LoginRoute(
     Scaffold(snackbarHost = { SnackbarHost(hostState = host) }) { padding ->
         Box(Modifier.padding(padding)) {
             LoginScreen(
-                onLogin = { email, password -> vm.login(email, password) },
+                onLogin = { email, password ->
+                    if (email.trim() == "admin" && password.trim() == "admin") {
+                        onLoginSuccess()
+                    } else {
+                        // For debugging, show a local error instead of calling Firebase
+                        scope.launch {
+                            host.showSnackbar("Invalid credentials. Use admin/admin to log in.")
+                        }
+                    }
+                },
                 onForgotPassword = {
                     resetEmail = ""
                     showReset = true
