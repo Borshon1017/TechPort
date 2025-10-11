@@ -1,6 +1,5 @@
 package com.example.techport.ui.login
 
-import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
@@ -8,8 +7,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -20,18 +17,26 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.techport.R            // <-- needed for R.drawable.ic_google_logo
 import com.example.techport.ui.theme.TechPOrtTheme
 
 @Composable
-fun LoginScreen(
-    onLogin: (email: String, password: String) -> Unit,
-    onForgotPassword: () -> Unit = {},
-    onSignUp: () -> Unit = {},
-    onGoogleLogin: () -> Unit = {}
+fun SignUpScreen(
+    onSignUp: (
+        firstName: String,
+        lastName: String,
+        nickname: String,
+        email: String,
+        password: String
+    ) -> Unit = { _, _, _, _, _ -> },
+    onAlreadyHaveAccount: () -> Unit = {},
+    onForgotPassword: () -> Unit = {}
 ) {
+    var firstName by remember { mutableStateOf("") }
+    var lastName by remember { mutableStateOf("") }
+    var nickname by remember { mutableStateOf("") } // optional
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var confirm by remember { mutableStateOf("") }
     var error by remember { mutableStateOf("") }
 
     Scaffold { innerPadding ->
@@ -43,10 +48,41 @@ fun LoginScreen(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("Welcome Back!", style = MaterialTheme.typography.headlineLarge)
-            Text("Please sign in to continue", style = MaterialTheme.typography.bodyMedium)
+            Text("Create Account", style = MaterialTheme.typography.headlineLarge)
+            Text("Please fill in the details", style = MaterialTheme.typography.bodyMedium)
 
-            Spacer(Modifier.height(32.dp))
+            Spacer(Modifier.height(24.dp))
+
+            // First + Last name
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                OutlinedTextField(
+                    value = firstName,
+                    onValueChange = { firstName = it },
+                    label = { Text("First name") },
+                    singleLine = true,
+                    modifier = Modifier.weight(1f)
+                )
+                OutlinedTextField(
+                    value = lastName,
+                    onValueChange = { lastName = it },
+                    label = { Text("Last name") },
+                    singleLine = true,
+                    modifier = Modifier.weight(1f)
+                )
+            }
+
+            Spacer(Modifier.height(12.dp))
+
+            // Nickname (optional)
+            OutlinedTextField(
+                value = nickname,
+                onValueChange = { nickname = it },
+                label = { Text("Nickname (optional)") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(Modifier.height(12.dp))
 
             OutlinedTextField(
                 value = email,
@@ -57,12 +93,24 @@ fun LoginScreen(
                 modifier = Modifier.fillMaxWidth()
             )
 
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(12.dp))
 
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
                 label = { Text("Password") },
+                singleLine = true,
+                visualTransformation = PasswordVisualTransformation(),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(Modifier.height(12.dp))
+
+            OutlinedTextField(
+                value = confirm,
+                onValueChange = { confirm = it },
+                label = { Text("Confirm password") },
                 singleLine = true,
                 visualTransformation = PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
@@ -77,45 +125,23 @@ fun LoginScreen(
                 )
             }
 
-            Spacer(Modifier.height(24.dp))
+            Spacer(Modifier.height(20.dp))
 
             Button(
                 onClick = {
-                    if (email.isBlank() || password.isBlank()) {
-                        error = "Please enter your email and password"
-                    } else {
-                        error = ""
-                        onLogin(email, password)
+                    error = when {
+                        firstName.isBlank() || lastName.isBlank() ||
+                                email.isBlank() || password.isBlank() || confirm.isBlank() ->
+                            "All required fields must be filled"
+                        password != confirm -> "Passwords do not match"
+                        else -> {
+                            onSignUp(firstName, lastName, nickname, email, password)
+                            ""
+                        }
                     }
                 },
                 modifier = Modifier.fillMaxWidth()
-            ) { Text("Login") }
-
-            // ---- Google sign-in button ----
-            Spacer(Modifier.height(16.dp))
-            OutlinedButton(
-                onClick = onGoogleLogin,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp),
-                shape = MaterialTheme.shapes.medium
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_google_logo),
-                        contentDescription = "Google Logo",
-                        tint = Color.Unspecified,
-                        modifier = Modifier.size(24.dp)
-                    )
-                    Spacer(Modifier.width(12.dp))
-                    Text("Continue with Google")
-                }
-            }
-            // ---- end Google button ----
+            ) { Text("Sign up") }
 
             Spacer(Modifier.height(16.dp))
 
@@ -130,29 +156,35 @@ fun LoginScreen(
 
             Spacer(Modifier.height(12.dp))
 
-            val annotatedText = buildAnnotatedString {
+            val annotated = buildAnnotatedString {
                 withStyle(
-                    style = SpanStyle(
+                    SpanStyle(
                         color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f),
                         fontSize = 12.sp
                     )
-                ) { append("Don't have an account? ") }
+                ) { append("Already have an account? ") }
                 withStyle(
-                    style = SpanStyle(
+                    SpanStyle(
                         color = MaterialTheme.colorScheme.secondary,
                         fontWeight = FontWeight.Bold,
                         fontSize = 14.sp
                     )
-                ) { append("Sign up here") }
+                ) { append("Log in here") }
             }
 
             Text(
-                text = annotatedText,
+                text = annotated,
                 textAlign = TextAlign.Center,
                 modifier = Modifier
-                    .clickable { onSignUp() }
+                    .clickable { onAlreadyHaveAccount() }
                     .padding(top = 4.dp)
             )
         }
     }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun SignUpScreenPreview() {
+    TechPOrtTheme { SignUpScreen() }
 }

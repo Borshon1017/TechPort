@@ -1,5 +1,6 @@
 package com.example.techport.ui.main
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
@@ -10,18 +11,12 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import com.example.techport.NavItem
 import com.example.techport.ui.home.HomeScreen
 import com.example.techport.ui.map.MapScreen
 import com.example.techport.ui.profile.ProfileScreen
-import com.example.techport.ui.theme.TechPOrtTheme
 
 @Composable
 fun MainScreen() {
@@ -48,16 +43,8 @@ fun MainScreen() {
     ) { innerPadding ->
         when (selectedItem.route) {
             "home" -> HomeScreen()
-            "map" -> MapScreen()
+            "map" -> Box(Modifier.padding(innerPadding)) { MapScreen() } // apply padding outside
             "profile" -> ProfileScreen()
         }
-    }
-}
-
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun MainScreenPreview() {
-    TechPOrtTheme {
-        MainScreen()
     }
 }

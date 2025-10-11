@@ -8,14 +8,22 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import com.example.techport.ui.login.LoginScreen
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.example.techport.ui.login.LoginRoute
+import com.example.techport.ui.login.SignUpRoute
 import com.example.techport.ui.main.MainScreen
+import com.example.techport.ui.map.MapScreen
 import com.example.techport.ui.theme.TechPOrtTheme
+
+private object Routes {
+    const val LOGIN = "login"
+    const val SIGNUP = "signup"
+    const val HOME = "home"
+    const val MAP = "map"
+}
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -36,11 +44,31 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun AppNavigation() {
-    var isLoggedIn by remember { mutableStateOf(false) }
+    val nav = rememberNavController()
 
-    if (isLoggedIn) {
-        MainScreen()
-    } else {
-        LoginScreen(onLoginSuccess = { isLoggedIn = true })
+    NavHost(navController = nav, startDestination = Routes.LOGIN) {
+
+        composable(Routes.LOGIN) {
+            LoginRoute(
+                onLoginSuccess = {
+                    nav.navigate(Routes.HOME) {
+                        popUpTo(Routes.LOGIN) { inclusive = true }
+                    }
+                },
+                onForgotPassword = { /* TODO */ },
+                onSignUp = { nav.navigate(Routes.SIGNUP) }
+            )
+        }
+
+        composable(Routes.SIGNUP) {
+            SignUpRoute(
+                onSignedUp = { nav.popBackStack(Routes.LOGIN, inclusive = false) },
+                onAlready = { nav.popBackStack() },
+                onForgot = { /* TODO */ }
+            )
+        }
+
+        composable(Routes.HOME) { MainScreen() }
+        composable(Routes.MAP)  { MapScreen() }
     }
 }

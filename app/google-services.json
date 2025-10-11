@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "174668762213",
+    "project_id": "techport-auth",
+    "storage_bucket": "techport-auth.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:174668762213:android:c58cc9ed6bbf259e25ca8c",
+        "android_client_info": {
+          "package_name": "com.example.techport"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "174668762213-7fqgrh4mrkr6g53u3e9i8ria1065j2a0.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.techport",
+            "certificate_hash": "26a8eef7fc235b893f346d1aa0c6aa69c6b7a18e"
+          }
+        },
+        {
+          "client_id": "174668762213-npcitvahb7ud9se51dtgklm4ch5smnqr.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDGcHGk6yO8KVeA7rJSz_qzJiAGZK-bzTg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "174668762213-npcitvahb7ud9se51dtgklm4ch5smnqr.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
