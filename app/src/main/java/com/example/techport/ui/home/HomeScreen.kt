@@ -41,6 +41,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -154,11 +155,25 @@ fun HomeScreen() {
 fun FilterButton(text: String, selectedFilter: String, onClick: (String) -> Unit) {
     val isSelected = text == selectedFilter
 
+    val glowColor = when (text) {
+        "Top Rated" -> Color.Red
+        "New Arrival" -> Color.Green
+        "Best Selling" -> Color.Blue
+        else -> Color.Transparent
+    }
+
+    val glowModifier = if (isSelected) {
+        Modifier.shadow(elevation = 8.dp, spotColor = glowColor, shape = MaterialTheme.shapes.extraLarge)
+    } else {
+        Modifier
+    }
+
     if (isSelected) {
         Button(
             onClick = { onClick(text) },
             shape = MaterialTheme.shapes.extraLarge,
-            colors = ButtonDefaults.buttonColors(containerColor = Color.Black, contentColor = Color.White)
+            colors = ButtonDefaults.buttonColors(containerColor = Color.Black, contentColor = Color.White),
+            modifier = glowModifier
         ) {
             Text(text)
         }
