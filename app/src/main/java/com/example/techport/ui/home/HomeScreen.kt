@@ -1,703 +1,233 @@
 package com.example.techport.ui.home
 
-import androidx.compose.animation.*
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.techport.ui.theme.TechPOrtTheme
 
-// Enhanced Product data class with complete information
-data class Product(
-    val id: Int,
-    val name: String,
-    val category: String,
-    val price: Double,
-    val rating: Float,
-    val image: String,
-    val specs: Map<String, String>,
-    val description: String,
-    val isRecommended: Boolean = false
-)
+data class Product(val name: String)
 
-// Sample data with realistic products
-object ProductData {
-    val categories = listOf(
-        "Smartphones", "Laptops", "Tablets", "Accessories",
-        "Audio", "Cameras", "Wearables", "Gaming"
-    )
-
-    val products = listOf(
-        Product(
-            id = 1,
-            name = "TechPhone Pro 15",
-            category = "Smartphones",
-            price = 899.99,
-            rating = 4.5f,
-            image = "📱",
-            specs = mapOf(
-                "Display" to "6.7\" OLED",
-                "Processor" to "Snapdragon 8 Gen 3",
-                "RAM" to "12GB",
-                "Storage" to "256GB",
-                "Camera" to "108MP + 12MP + 8MP",
-                "Battery" to "5000mAh"
-            ),
-            description = "Experience flagship performance with our latest smartphone featuring stunning display and advanced camera system.",
-            isRecommended = true
-        ),
-        Product(
-            id = 2,
-            name = "UltraBook Air M3",
-            category = "Laptops",
-            price = 1299.99,
-            rating = 4.8f,
-            image = "💻",
-            specs = mapOf(
-                "Display" to "14\" Retina",
-                "Processor" to "M3 Chip",
-                "RAM" to "16GB",
-                "Storage" to "512GB SSD",
-                "Graphics" to "Integrated GPU",
-                "Battery Life" to "Up to 18 hours"
-            ),
-            description = "Ultra-thin and powerful laptop perfect for professionals and creators on the go.",
-            isRecommended = true
-        ),
-        Product(
-            id = 3,
-            name = "TabPro 12 Ultra",
-            category = "Tablets",
-            price = 699.99,
-            rating = 4.6f,
-            image = "📲",
-            specs = mapOf(
-                "Display" to "12.4\" AMOLED",
-                "Processor" to "Dimensity 9000+",
-                "RAM" to "8GB",
-                "Storage" to "256GB",
-                "Camera" to "13MP + 8MP",
-                "S-Pen" to "Included"
-            ),
-            description = "Versatile tablet with stunning display and productivity features for work and entertainment."
-        ),
-        Product(
-            id = 4,
-            name = "AirBuds Pro Max",
-            category = "Audio",
-            price = 249.99,
-            rating = 4.7f,
-            image = "🎧",
-            specs = mapOf(
-                "Driver" to "40mm Dynamic",
-                "ANC" to "Hybrid Active Noise Cancelling",
-                "Battery" to "30 hours with ANC",
-                "Connectivity" to "Bluetooth 5.3",
-                "Water Resistance" to "IPX4",
-                "Fast Charging" to "5 min = 3 hours"
-            ),
-            description = "Premium wireless headphones with exceptional sound quality and all-day comfort.",
-            isRecommended = true
-        ),
-        Product(
-            id = 5,
-            name = "PixelCam 4K Pro",
-            category = "Cameras",
-            price = 1499.99,
-            rating = 4.9f,
-            image = "📷",
-            specs = mapOf(
-                "Sensor" to "Full Frame 45MP",
-                "Video" to "4K 60fps",
-                "ISO Range" to "100-51200",
-                "Stabilization" to "5-axis IBIS",
-                "Autofocus" to "693-point AF",
-                "Storage" to "Dual SD Card Slots"
-            ),
-            description = "Professional mirrorless camera for stunning photos and cinematic videos."
-        ),
-        Product(
-            id = 6,
-            name = "SmartWatch X5",
-            category = "Wearables",
-            price = 349.99,
-            rating = 4.4f,
-            image = "⌚",
-            specs = mapOf(
-                "Display" to "1.9\" AMOLED",
-                "Health Tracking" to "Heart Rate, SpO2, Sleep",
-                "Battery" to "7 days typical use",
-                "Water Resistance" to "5ATM",
-                "GPS" to "Built-in GPS/GLONASS",
-                "Sensors" to "ECG, Gyroscope, Compass"
-            ),
-            description = "Advanced smartwatch with comprehensive health tracking and fitness features."
-        ),
-        Product(
-            id = 7,
-            name = "GamePad Elite",
-            category = "Gaming",
-            price = 179.99,
-            rating = 4.6f,
-            image = "🎮",
-            specs = mapOf(
-                "Connectivity" to "Wireless + USB-C",
-                "Battery" to "40 hours",
-                "Features" to "Programmable buttons, RGB",
-                "Compatibility" to "PC, Console, Mobile",
-                "Response Time" to "1ms",
-                "Vibration" to "Dual Motor Haptic"
-            ),
-            description = "Professional gaming controller with customizable buttons and ultra-responsive controls.",
-            isRecommended = true
-        ),
-        Product(
-            id = 8,
-            name = "PowerBank Ultra 30K",
-            category = "Accessories",
-            price = 79.99,
-            rating = 4.5f,
-            image = "🔋",
-            specs = mapOf(
-                "Capacity" to "30000mAh",
-                "Output" to "100W PD 3.0",
-                "Ports" to "2x USB-C, 1x USB-A",
-                "Input" to "65W Fast Recharge",
-                "Display" to "LED Power Display",
-                "Safety" to "Multi-Protection System"
-            ),
-            description = "High-capacity power bank with fast charging for all your devices."
-        ),
-        Product(
-            id = 9,
-            name = "MechKeys Pro RGB",
-            category = "Accessories",
-            price = 159.99,
-            rating = 4.7f,
-            image = "⌨️",
-            specs = mapOf(
-                "Switch Type" to "Mechanical Hot-Swap",
-                "Layout" to "75% Compact",
-                "Connectivity" to "Wireless + Wired",
-                "Battery" to "3000mAh",
-                "RGB" to "Per-Key RGB Lighting",
-                "Material" to "Aluminum Frame"
-            ),
-            description = "Premium mechanical keyboard with customizable switches and stunning RGB."
-        ),
-        Product(
-            id = 10,
-            name = "Studio Monitor 27\"",
-            category = "Accessories",
-            price = 449.99,
-            rating = 4.8f,
-            image = "🖥️",
-            specs = mapOf(
-                "Size" to "27\" 4K UHD",
-                "Panel" to "IPS",
-                "Refresh Rate" to "60Hz",
-                "Color Accuracy" to "99% sRGB",
-                "Connectivity" to "HDMI, DisplayPort, USB-C",
-                "Stand" to "Height/Tilt Adjustable"
-            ),
-            description = "Professional monitor with exceptional color accuracy for creators."
-        )
-    )
-
-    fun getRecommendedProducts() = products.filter { it.isRecommended }
-
-    fun searchProducts(query: String) = products.filter {
-        it.name.contains(query, ignoreCase = true) ||
-                it.category.contains(query, ignoreCase = true)
-    }
-
-    fun filterByCategory(category: String) = products.filter { it.category == category }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(
-    userName: String = "Jade",
-    onProductClick: (Product) -> Unit = {},
-    onProfileClick: () -> Unit = {}
-) {
+fun HomeScreen() {
     var searchQuery by remember { mutableStateOf("") }
-    var selectedCategory by remember { mutableStateOf<String?>(null) }
+    var selectedFilter by remember { mutableStateOf("Top Rated") }
+    val laptops = listOf(Product("Laptop 1"), Product("Laptop 2"), Product("Laptop 3"), Product("Laptop 4"))
+    val phones = listOf(Product("Phone 1"), Product("Phone 2"), Product("Phone 3"), Product("Phone 4"))
+    val accessories = listOf(Product("Accessory 1"), Product("Accessory 2"), Product("Accessory 3"), Product("Accessory 4"))
+    val scrollState = rememberScrollState()
 
-    val filteredProducts = remember(searchQuery, selectedCategory) {
-        when {
-            searchQuery.isNotEmpty() -> ProductData.searchProducts(searchQuery)
-            selectedCategory != null -> ProductData.filterByCategory(selectedCategory!!)
-            else -> ProductData.products
-        }
-    }
-
-    val recommendedProducts = ProductData.getRecommendedProducts()
-
-    Scaffold(
-        topBar = {
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                color = MaterialTheme.colorScheme.surface,
-                shadowElevation = 2.dp
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column {
-                        Text(
-                            text = "Hello, $userName",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Text(
-                            text = "Ready to Explore?",
-                            fontSize = 24.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-
-                    IconButton(
-                        onClick = onProfileClick,
-                        modifier = Modifier
-                            .size(48.dp)
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.primaryContainer)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.AccountCircle,
-                            contentDescription = "Profile",
-                            modifier = Modifier.size(32.dp),
-                            tint = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-                    }
-                }
-            }
-        }
-    ) { paddingValues ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues),
-            contentPadding = PaddingValues(bottom = 16.dp)
-        ) {
-            item {
-                SearchBar(
-                    query = searchQuery,
-                    onQueryChange = { searchQuery = it },
-                    modifier = Modifier.padding(16.dp)
-                )
-            }
-
-            item {
-                Text(
-                    text = "Categories",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                )
-
-                LazyRow(
-                    contentPadding = PaddingValues(horizontal = 16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    items(ProductData.categories) { category ->
-                        CategoryChip(
-                            category = category,
-                            isSelected = selectedCategory == category,
-                            onClick = {
-                                selectedCategory = if (selectedCategory == category) null else category
-                                searchQuery = ""
-                            }
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-            }
-
-            if (searchQuery.isEmpty() && selectedCategory == null && recommendedProducts.isNotEmpty()) {
-                item {
-                    SectionHeader(
-                        title = "Recommended for You",
-                        icon = "⭐"
-                    )
-
-                    LazyRow(
-                        contentPadding = PaddingValues(horizontal = 16.dp),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        items(recommendedProducts) { product ->
-                            RecommendedProductCard(
-                                product = product,
-                                onClick = { onProductClick(product) }
-                            )
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(24.dp))
-                }
-            }
-
-            item {
-                val title = when {
-                    searchQuery.isNotEmpty() -> "Search Results (${filteredProducts.size})"
-                    selectedCategory != null -> selectedCategory!!
-                    else -> "All Products"
-                }
-
-                SectionHeader(title = title, icon = "🛍️")
-            }
-
-            item {
-                if (filteredProducts.isEmpty()) {
-                    EmptyState(searchQuery = searchQuery)
-                } else {
-                    ProductGrid(
-                        products = filteredProducts,
-                        onProductClick = onProductClick
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun SearchBar(
-    query: String,
-    onQueryChange: (String) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    OutlinedTextField(
-        value = query,
-        onValueChange = onQueryChange,
-        modifier = modifier
-            .fillMaxWidth()
-            .height(56.dp),
-        placeholder = {
-            Text(
-                "Search for products...",
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        },
-        leadingIcon = {
-            Icon(
-                imageVector = Icons.Default.Search,
-                contentDescription = "Search",
-                tint = MaterialTheme.colorScheme.primary
-            )
-        },
-        shape = RoundedCornerShape(28.dp),
-        colors = OutlinedTextFieldDefaults.colors(
-            unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
-            focusedBorderColor = MaterialTheme.colorScheme.primary
-        ),
-        singleLine = true
-    )
-}
-
-@Composable
-fun CategoryChip(
-    category: String,
-    isSelected: Boolean,
-    onClick: () -> Unit
-) {
-    val backgroundColor = if (isSelected) {
-        MaterialTheme.colorScheme.primary
-    } else {
-        MaterialTheme.colorScheme.surfaceVariant
-    }
-
-    val contentColor = if (isSelected) {
-        MaterialTheme.colorScheme.onPrimary
-    } else {
-        MaterialTheme.colorScheme.onSurfaceVariant
-    }
-
-    Surface(
-        onClick = onClick,
-        shape = RoundedCornerShape(20.dp),
-        color = backgroundColor,
-        modifier = Modifier.animateContentSize()
-    ) {
-        Text(
-            text = category,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
-            color = contentColor,
-            fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
-            fontSize = 14.sp
-        )
-    }
-}
-
-@Composable
-fun SectionHeader(title: String, icon: String) {
-    Row(
-        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = icon,
-            fontSize = 20.sp,
-            modifier = Modifier.padding(end = 8.dp)
-        )
-        Text(
-            text = title,
-            fontSize = 18.sp,
-            fontWeight = FontWeight.SemiBold
-        )
-    }
-}
-
-@Composable
-fun RecommendedProductCard(
-    product: Product,
-    onClick: () -> Unit
-) {
-    Card(
-        onClick = onClick,
-        modifier = Modifier
-            .width(200.dp)
-            .height(260.dp),
-        shape = RoundedCornerShape(16.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        )
-    ) {
+    Surface(modifier = Modifier.fillMaxSize(), color = Color.White) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(16.dp)
+                .verticalScroll(scrollState)
         ) {
-            Box(
-                modifier = Modifier
-                    .size(120.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(
-                        Brush.linearGradient(
-                            colors = listOf(
-                                MaterialTheme.colorScheme.primaryContainer,
-                                MaterialTheme.colorScheme.secondaryContainer
-                            )
-                        )
-                    )
-                    .align(Alignment.CenterHorizontally),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = product.image,
-                    fontSize = 48.sp
-                )
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Text(
-                text = product.name,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.SemiBold,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-                lineHeight = 18.sp
-            )
-
-            Spacer(modifier = Modifier.height(4.dp))
-
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    imageVector = Icons.Default.Star,
-                    contentDescription = null,
-                    modifier = Modifier.size(14.dp),
-                    tint = Color(0xFFFFC107)
-                )
-                Text(
-                    text = product.rating.toString(),
-                    fontSize = 12.sp,
-                    modifier = Modifier.padding(start = 4.dp),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-
-            Spacer(modifier = Modifier.weight(1f))
-
-            Text(
-                text = "$${product.price}",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary
-            )
-        }
-    }
-}
-
-@Composable
-fun ProductGrid(
-    products: List<Product>,
-    onProductClick: (Product) -> Unit
-) {
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(2),
-        modifier = Modifier
-            .fillMaxWidth()
-            .wrapContentHeight(),  // ← Changed this line!
-        contentPadding = PaddingValues(horizontal = 16.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        items(products) { product ->
-            ProductCard(
-                product = product,
-                onClick = { onProductClick(product) }
-            )
-        }
-    }
-}
-
-@Composable
-fun ProductCard(
-    product: Product,
-    onClick: () -> Unit
-) {
-    Card(
-        onClick = onClick,
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(220.dp),
-        shape = RoundedCornerShape(16.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        )
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(12.dp)
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(100.dp)
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(MaterialTheme.colorScheme.surfaceVariant),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = product.image,
-                    fontSize = 40.sp
-                )
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                text = product.name,
-                fontSize = 13.sp,
-                fontWeight = FontWeight.Medium,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-                lineHeight = 16.sp
-            )
-
-            Spacer(modifier = Modifier.height(4.dp))
-
-            Surface(
-                shape = RoundedCornerShape(6.dp),
-                color = MaterialTheme.colorScheme.primaryContainer,
-                modifier = Modifier.padding(vertical = 2.dp)
-            ) {
-                Text(
-                    text = product.category,
-                    fontSize = 10.sp,
-                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                    color = MaterialTheme.colorScheme.onPrimaryContainer
-                )
-            }
-
-            Spacer(modifier = Modifier.weight(1f))
-
+            // Profile Header
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
+                horizontalArrangement = Arrangement.End,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = "$${product.price}",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
-                )
-
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Default.Star,
-                        contentDescription = null,
-                        modifier = Modifier.size(12.dp),
-                        tint = Color(0xFFFFC107)
-                    )
-                    Text(
-                        text = product.rating.toString(),
-                        fontSize = 11.sp,
-                        modifier = Modifier.padding(start = 2.dp)
-                    )
+                Column(horizontalAlignment = Alignment.End) {
+                    Text(text = "Hello, Jade", style = MaterialTheme.typography.bodyMedium, color = Color.Gray)
+                    Text(text = "Ready to Explore?", style = MaterialTheme.typography.headlineSmall, color = Color.Black, fontWeight = FontWeight.Bold)
                 }
+                Spacer(modifier = Modifier.width(12.dp))
+                Icon(
+                    imageVector = Icons.Default.AccountCircle,
+                    contentDescription = "Profile",
+                    tint = Color.Black,
+                    modifier = Modifier.size(48.dp).clip(CircleShape)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Search Bar
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = { searchQuery = it },
+                placeholder = { Text("Articles, Video, Audio and More,...") },
+                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = Color.Gray) },
+                modifier = Modifier.fillMaxWidth(),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = Color.Black,
+                    unfocusedBorderColor = Color.LightGray,
+                    focusedTextColor = Color.Black,
+                    unfocusedTextColor = Color.Black,
+                    cursorColor = Color.Black,
+                    focusedPlaceholderColor = Color.Gray,
+                    unfocusedPlaceholderColor = Color.Gray
+                ),
+                shape = CircleShape
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Filter Buttons
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                FilterButton("Top Rated", selectedFilter) { selectedFilter = it }
+                FilterButton("New Arrival", selectedFilter) { selectedFilter = it }
+                FilterButton("Best Selling", selectedFilter) { selectedFilter = it }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Section Header for Featured
+            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Text(text = "Featured", style = MaterialTheme.typography.titleLarge, color = Color.Black, fontWeight = FontWeight.Bold)
+                Spacer(modifier = Modifier.weight(1f))
+                Text(text = "See more >", color = Color.Gray, modifier = Modifier.clickable {})
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Featured Card
+            Card(
+                modifier = Modifier.fillMaxWidth().height(200.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                border = BorderStroke(1.dp, Color(0xFFF0F0F0)),
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+            ) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text(text = "Featured ads", style = MaterialTheme.typography.bodyLarge, color = Color.Black)
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Product Sections
+            ProductSection(title = "Laptops", products = laptops)
+            Spacer(modifier = Modifier.height(24.dp))
+            ProductSection(title = "Phones", products = phones)
+            Spacer(modifier = Modifier.height(24.dp))
+            ProductSection(title = "Accessories", products = accessories)
+        }
+    }
+}
+
+@Composable
+fun FilterButton(text: String, selectedFilter: String, onClick: (String) -> Unit) {
+    val isSelected = text == selectedFilter
+
+    val glowColor = when (text) {
+        "Top Rated" -> Color.Red
+        "New Arrival" -> Color.Green
+        "Best Selling" -> Color.Blue
+        else -> Color.Transparent
+    }
+
+    val glowModifier = if (isSelected) {
+        Modifier.shadow(elevation = 8.dp, spotColor = glowColor, shape = MaterialTheme.shapes.extraLarge)
+    } else {
+        Modifier
+    }
+
+    if (isSelected) {
+        Button(
+            onClick = { onClick(text) },
+            shape = MaterialTheme.shapes.extraLarge,
+            colors = ButtonDefaults.buttonColors(containerColor = Color.Black, contentColor = Color.White),
+            modifier = glowModifier
+        ) {
+            Text(text)
+        }
+    } else {
+        OutlinedButton(
+            onClick = { onClick(text) },
+            shape = MaterialTheme.shapes.extraLarge,
+            border = BorderStroke(1.dp, Color.LightGray),
+            colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Black)
+        ) {
+            Text(text)
+        }
+    }
+}
+
+@Composable
+fun ProductSection(title: String, products: List<Product>) {
+    Column {
+        Text(text = title, style = MaterialTheme.typography.titleLarge, color = Color.Black, fontWeight = FontWeight.Bold)
+        Spacer(modifier = Modifier.height(16.dp))
+        LazyRow(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+            items(products) { product ->
+                ProductCard(product = product)
             }
         }
     }
 }
 
 @Composable
-fun EmptyState(searchQuery: String) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(32.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+fun ProductCard(product: Product) {
+    Card(
+        modifier = Modifier.size(160.dp, 180.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        border = BorderStroke(1.dp, Color(0xFFF0F0F0)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        Text(
-            text = "🔍",
-            fontSize = 64.sp
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(
-            text = "No products found",
-            fontSize = 18.sp,
-            fontWeight = FontWeight.SemiBold
-        )
-        if (searchQuery.isNotEmpty()) {
-            Text(
-                text = "Try searching for something else",
-                fontSize = 14.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(top = 8.dp)
+        Column(
+            modifier = Modifier.fillMaxSize().padding(12.dp),
+            horizontalAlignment = Alignment.Start,
+            verticalArrangement = Arrangement.Top
+        ) {
+            Box(
+                modifier = Modifier.weight(1f).fillMaxWidth().background(Color(0xFFF5F5F5), shape = MaterialTheme.shapes.medium)
             )
+            Spacer(modifier = Modifier.height(12.dp))
+            Text(text = product.name, color = Color.Black, fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
         }
+    }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFFFFFFFF)
+@Composable
+fun HomeScreenPreview() {
+    TechPOrtTheme {
+        HomeScreen()
     }
 }
