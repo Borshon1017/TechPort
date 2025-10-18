@@ -43,7 +43,6 @@ fun MainScreen() {
     )
 
 <<<<<<< HEAD
-<<<<<<< HEAD
     var selectedItem by remember { mutableStateOf(navItems.first()) }
     var selectedProduct by remember { mutableStateOf<Product?>(null) }
 
@@ -111,8 +110,6 @@ fun MainScreen() {
                     )
                 }
 =======
-=======
->>>>>>> parent of e1b3089 (Add professional home screen and product detail screen)
     Scaffold(
         bottomBar = {
             BottomNavBar(navItems = navItems, selectedItem = selectedItem) { selectedItem = it }
@@ -125,9 +122,6 @@ fun MainScreen() {
                 "home" -> HomeScreen()
                 "map" -> MapScreen()
                 "profile" -> ProfileScreen()
-<<<<<<< HEAD
->>>>>>> parent of e1b3089 (Add professional home screen and product detail screen)
-=======
 >>>>>>> parent of e1b3089 (Add professional home screen and product detail screen)
             }
         }
