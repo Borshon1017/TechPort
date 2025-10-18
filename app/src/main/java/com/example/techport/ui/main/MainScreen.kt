@@ -1,35 +1,26 @@
 package com.example.techport.ui.main
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.togetherWith
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Place
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -44,6 +35,7 @@ import com.example.techport.ui.map.MapScreen
 import com.example.techport.ui.profile.ProfileScreen
 import com.example.techport.ui.theme.TechPOrtTheme
 
+@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun MainScreen() {
     val navItems = listOf(
@@ -51,44 +43,72 @@ fun MainScreen() {
         NavItem("Map", Icons.Default.Place, "map"),
         NavItem("Profile", Icons.Default.Person, "profile")
     )
-    var selectedItem by remember { mutableStateOf(navItems.first()) }
 
-    // NEW: State to track selected product
+    var selectedItem by remember { mutableStateOf(navItems.first()) }
     var selectedProduct by remember { mutableStateOf<Product?>(null) }
 
-    // NEW: If a product is selected, show details instead
-    if (selectedProduct != null) {
-        ProductDetailScreen(
-            product = selectedProduct!!,
-            onBackClick = {
-                selectedProduct = null // Clear selection to go back
-            },
-            onAddToCart = { product ->
-                // TODO: Add to cart logic
-                println("Added to cart: ${product.name}")
+    Scaffold(
+        bottomBar = {
+            if (selectedProduct == null) { // hide bottom bar when in product detail
+                BottomNavBar(
+                    navItems = navItems,
+                    selectedItem = selectedItem,
+                    onItemSelected = { selectedItem = it }
+                )
             }
-        )
-    } else {
-        // Normal navigation
-        Scaffold(
-            bottomBar = {
-                BottomNavBar(navItems = navItems, selectedItem = selectedItem) { selectedItem = it }
-            },
-            containerColor = Color.White.copy(alpha = 0.05f)
-        ) { innerPadding ->
-            Box(modifier = Modifier.padding(innerPadding)) {
-                when (selectedItem.route) {
-                    "home" -> HomeScreen(
-                        userName = "Jade",
-                        onProductClick = { product ->
-                            selectedProduct = product // Show product details
-                        },
-                        onProfileClick = {
-                            selectedItem = navItems.find { it.route == "profile" }!!
+        },
+        containerColor = Color.White.copy(alpha = 0.05f)
+    ) { innerPadding ->
+        Box(modifier = Modifier.padding(innerPadding)) {
+
+            // Animated transition between Home and ProductDetail
+            AnimatedContent(
+                targetState = selectedProduct,
+                transitionSpec = {
+                    if (targetState != null) {
+                        slideInHorizontally(
+                            initialOffsetX = { it },
+                            animationSpec = tween(400, easing = FastOutSlowInEasing)
+                        ) + fadeIn() togetherWith
+                                slideOutHorizontally(
+                                    targetOffsetX = { -it / 2 },
+                                    animationSpec = tween(300)
+                                ) + fadeOut()
+                    } else {
+                        slideInHorizontally(
+                            initialOffsetX = { -it / 2 },
+                            animationSpec = tween(400, easing = FastOutSlowInEasing)
+                        ) + fadeIn() togetherWith
+                                slideOutHorizontally(
+                                    targetOffsetX = { it },
+                                    animationSpec = tween(300)
+                                ) + fadeOut()
+                    }
+                },
+                label = "home_product_transition"
+            ) { targetProduct ->
+                if (targetProduct == null) {
+                    // Normal navigation (home, map, profile)
+                    when (selectedItem.route) {
+                        "home" -> HomeScreen(
+                            userName = "Jade",
+                            onProductClick = { product -> selectedProduct = product },
+                            onProfileClick = {
+                                selectedItem = navItems.find { it.route == "profile" }!!
+                            }
+                        )
+                        "map" -> MapScreen()
+                        "profile" -> ProfileScreen()
+                    }
+                } else {
+                    // Product detail screen
+                    ProductDetailScreen(
+                        product = targetProduct,
+                        onBackClick = { selectedProduct = null },
+                        onAddToCart = { product ->
+                            println("Added to cart: ${product.name}")
                         }
                     )
-                    "map" -> MapScreen()
-                    "profile" -> ProfileScreen()
                 }
             }
         }
@@ -103,7 +123,9 @@ fun BottomNavBar(
 ) {
     Box(modifier = Modifier.padding(start = 24.dp, end = 24.dp, bottom = 24.dp, top = 8.dp)) {
         Surface(
-            modifier = Modifier.fillMaxWidth().height(64.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(64.dp),
             shape = CircleShape,
             color = Color.Black,
             shadowElevation = 8.dp
