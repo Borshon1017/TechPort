@@ -79,14 +79,7 @@ fun LoginRoute(
         Box(Modifier.padding(padding)) {
             LoginScreen(
                 onLogin = { email, password ->
-                    if (email.trim() == "admin" && password.trim() == "admin") {
-                        onLoginSuccess()
-                    } else {
-                        // For debugging, show a local error instead of calling Firebase
-                        scope.launch {
-                            host.showSnackbar("Invalid credentials. Use admin/admin to log in.")
-                        }
-                    }
+                    vm.login(email, password)
                 },
                 onForgotPassword = {
                     resetEmail = ""
