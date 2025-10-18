@@ -38,8 +38,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.techport.NavItem
 import com.example.techport.ui.home.HomeScreen
-import com.example.techport.ui.home.Product
-import com.example.techport.ui.home.ProductDetailScreen
 import com.example.techport.ui.map.MapScreen
 import com.example.techport.ui.profile.ProfileScreen
 import com.example.techport.ui.theme.TechPOrtTheme
@@ -53,43 +51,18 @@ fun MainScreen() {
     )
     var selectedItem by remember { mutableStateOf(navItems.first()) }
 
-    // NEW: State to track selected product
-    var selectedProduct by remember { mutableStateOf<Product?>(null) }
-
-    // NEW: If a product is selected, show details instead
-    if (selectedProduct != null) {
-        ProductDetailScreen(
-            product = selectedProduct!!,
-            onBackClick = {
-                selectedProduct = null // Clear selection to go back
-            },
-            onAddToCart = { product ->
-                // TODO: Add to cart logic
-                println("Added to cart: ${product.name}")
-            }
-        )
-    } else {
-        // Normal navigation
-        Scaffold(
-            bottomBar = {
-                BottomNavBar(navItems = navItems, selectedItem = selectedItem) { selectedItem = it }
-            },
-            containerColor = Color.White.copy(alpha = 0.05f)
-        ) { innerPadding ->
-            Box(modifier = Modifier.padding(innerPadding)) {
-                when (selectedItem.route) {
-                    "home" -> HomeScreen(
-                        userName = "Jade",
-                        onProductClick = { product ->
-                            selectedProduct = product // Show product details
-                        },
-                        onProfileClick = {
-                            selectedItem = navItems.find { it.route == "profile" }!!
-                        }
-                    )
-                    "map" -> MapScreen()
-                    "profile" -> ProfileScreen()
-                }
+    Scaffold(
+        bottomBar = {
+            BottomNavBar(navItems = navItems, selectedItem = selectedItem) { selectedItem = it }
+        },
+        // Set a transparent background to see the floating bar correctly
+        containerColor = Color.White.copy(alpha = 0.05f)
+    ) { innerPadding ->
+        Box(modifier = Modifier.padding(innerPadding)) {
+            when (selectedItem.route) {
+                "home" -> HomeScreen()
+                "map" -> MapScreen()
+                "profile" -> ProfileScreen()
             }
         }
     }
@@ -101,6 +74,7 @@ fun BottomNavBar(
     selectedItem: NavItem,
     onItemSelected: (NavItem) -> Unit
 ) {
+    // A Box to contain the bar and give it padding, making it "float"
     Box(modifier = Modifier.padding(start = 24.dp, end = 24.dp, bottom = 24.dp, top = 8.dp)) {
         Surface(
             modifier = Modifier.fillMaxWidth().height(64.dp),
@@ -109,7 +83,7 @@ fun BottomNavBar(
             shadowElevation = 8.dp
         ) {
             val itemCount = navItems.size
-            val barWidth = LocalConfiguration.current.screenWidthDp.dp - 48.dp
+            val barWidth = LocalConfiguration.current.screenWidthDp.dp - 48.dp // 24dp padding on each side
             val itemWidth = barWidth / itemCount
             val selectedIndex = navItems.indexOf(selectedItem)
 
@@ -119,16 +93,19 @@ fun BottomNavBar(
                 label = "indicatorOffset"
             )
 
+            // Layered container
             Box(modifier = Modifier.fillMaxSize()) {
+                // Layer 1: The sliding indicator
                 Box(
                     modifier = Modifier
                         .offset(x = indicatorOffset)
                         .width(itemWidth)
                         .fillMaxHeight()
-                        .padding(vertical = 4.dp, horizontal = (itemWidth - 56.dp) / 2)
+                        .padding(vertical = 4.dp, horizontal = (itemWidth - 56.dp) / 2) // Center the 56dp circle
                         .background(Color.White, CircleShape)
                 )
 
+                // Layer 2: The row of icons
                 Row(
                     modifier = Modifier.fillMaxSize(),
                     horizontalArrangement = Arrangement.SpaceAround,
@@ -160,7 +137,7 @@ fun BottomNavItem(
             .fillMaxHeight()
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
-                indication = null,
+                indication = null, // No ripple effect
                 onClick = { onItemSelected(item) }
             ),
         contentAlignment = Alignment.Center
