@@ -28,7 +28,7 @@ class HistoryViewModel : ViewModel() {
             isLoading = true
             val userId = auth.currentUser?.uid
             if (userId != null) {
-                db.collection("users").document(userId).collection("purchases")
+                db.collection("user").document(userId).collection("purchases")
                     .orderBy("timestamp")
                     .get()
                     .addOnSuccessListener { documents ->

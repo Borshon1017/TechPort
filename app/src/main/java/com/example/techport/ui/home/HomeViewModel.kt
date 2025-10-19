@@ -169,7 +169,7 @@ class HomeViewModel : ViewModel() {
                             productName = cartItem.product.name,
                             timestamp = System.currentTimeMillis()
                         )
-                        db.collection("users").document(userId).collection("purchases").add(purchase)
+                        db.collection("user").document(userId).collection("purchases").add(purchase)
                     }
                 }
 
