@@ -1,7 +1,6 @@
 package com.example.techport.ui.main
 
 import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.material.icons.filled.Build
 import com.example.techport.ui.repair.RepairNavigation
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
@@ -21,6 +20,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Build
+import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Place
@@ -39,19 +40,30 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.techport.NavItem
+import com.example.techport.ui.history.HistoryNavigation
 import com.example.techport.ui.home.HomeNavigation
 import com.example.techport.ui.map.MapScreen
 import com.example.techport.ui.profile.ProfileScreen
 import com.example.techport.ui.theme.TechPOrtTheme
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
 
 @Composable
 fun MainScreen() {
-    val navItems = listOf(
-        NavItem("Home", Icons.Default.Home, "home"),
-        NavItem("Repairs", Icons.Default.Build, "repairs"),
-        NavItem("Map", Icons.Default.Place, "map"),
-        NavItem("Profile", Icons.Default.Person, "profile")
-    )
+    val isAdmin = Firebase.auth.currentUser?.uid == "l9z38yUqEvhHFnESGAMBoKGkT9Y2"
+
+    val navItems = remember(isAdmin) {
+        listOf(
+            NavItem("Home", Icons.Default.Home, "home"),
+            if (isAdmin) {
+                NavItem("Repairs", Icons.Default.Build, "repairs")
+            } else {
+                NavItem("History", Icons.Default.History, "history")
+            },
+            NavItem("Map", Icons.Default.Place, "map"),
+            NavItem("Profile", Icons.Default.Person, "profile")
+        )
+    }
     var selectedItem by remember { mutableStateOf(navItems.first()) }
 
     Scaffold(
@@ -64,6 +76,7 @@ fun MainScreen() {
             when (selectedItem.route) {
                 "home" -> HomeNavigation()
                 "repairs" -> RepairNavigation()
+                "history" -> HistoryNavigation()
                 "map" -> MapScreen()
                 "profile" -> ProfileScreen()
             }

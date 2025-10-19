@@ -3,6 +3,7 @@ package com.example.techport.ui.home
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.core.os.bundleOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.techport.data.Product
@@ -10,12 +11,13 @@ import com.example.techport.data.ProductRepository
 import com.example.techport.data.ApiService
 import com.example.techport.data.CartItem
 import com.example.techport.data.ExternalProduct
+import com.example.techport.ui.history.Purchase
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.ktx.analytics
-import com.google.firebase.analytics.ktx.logEvent
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.crashlytics.FirebaseCrashlytics
+import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.launch
 
@@ -24,6 +26,7 @@ class HomeViewModel : ViewModel() {
     private val apiService = ApiService()
     private val analytics = Firebase.analytics
     private val crashlytics = FirebaseCrashlytics.getInstance()
+    private val db = Firebase.firestore
 
     val currentUser: FirebaseUser?
         get() = Firebase.auth.currentUser
@@ -89,9 +92,9 @@ class HomeViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 externalProducts = apiService.fetchExternalProducts()
-                analytics.logEvent("external_api_loaded") {
-                    param("product_count", externalProducts.size.toLong())
-                }
+                analytics.logEvent("external_api_loaded", bundleOf(
+                    "product_count" to externalProducts.size.toLong()
+                ))
             } catch (e: Exception) {
                 crashlytics.recordException(e)
             }
@@ -116,9 +119,7 @@ class HomeViewModel : ViewModel() {
 
     fun selectCategory(category: String) {
         selectedCategory = category
-        analytics.logEvent("category_selected") {
-            param("category", category)
-        }
+        analytics.logEvent("category_selected", bundleOf("category" to category))
         loadProducts()
     }
 
@@ -130,10 +131,10 @@ class HomeViewModel : ViewModel() {
         } else {
             cartItems = cartItems + CartItem(product, 1)
         }
-        analytics.logEvent("add_to_cart") {
-            param("product_id", product.id)
-            param("product_name", product.name)
-        }
+        analytics.logEvent("add_to_cart", bundleOf(
+            FirebaseAnalytics.Param.ITEM_ID to product.id,
+            FirebaseAnalytics.Param.ITEM_NAME to product.name
+        ))
     }
 
     fun updateCartItemQuantity(cartItem: CartItem, quantity: Int) {
@@ -147,9 +148,9 @@ class HomeViewModel : ViewModel() {
 
     fun removeFromCart(cartItem: CartItem) {
         cartItems = cartItems.filter { it.product.id != cartItem.product.id }
-        analytics.logEvent("remove_from_cart") {
-            param("product_id", cartItem.product.id)
-        }
+        analytics.logEvent("remove_from_cart", bundleOf(
+            FirebaseAnalytics.Param.ITEM_ID to cartItem.product.id
+        ))
     }
 
     fun clearCart() {
@@ -160,6 +161,18 @@ class HomeViewModel : ViewModel() {
         viewModelScope.launch {
             isLoading = true
             try {
+                val userId = currentUser?.uid
+                if (userId != null) {
+                    cartItems.forEach { cartItem ->
+                        val purchase = Purchase(
+                            productId = cartItem.product.id,
+                            productName = cartItem.product.name,
+                            timestamp = System.currentTimeMillis()
+                        )
+                        db.collection("users").document(userId).collection("purchases").add(purchase)
+                    }
+                }
+
                 // Update stock for each cart item
                 cartItems.forEach { cartItem ->
                     val updatedProduct = cartItem.product.copy(
@@ -168,10 +181,11 @@ class HomeViewModel : ViewModel() {
                     repository.updateProduct(updatedProduct)
                 }
 
-                analytics.logEvent("checkout_completed") {
-                    param("total_items", cartItems.size.toLong())
-                    param("total_amount", cartItems.sumOf { it.totalPrice })
-                }
+                analytics.logEvent(FirebaseAnalytics.Event.PURCHASE, bundleOf(
+                    FirebaseAnalytics.Param.TRANSACTION_ID to "T${System.currentTimeMillis()}",
+                    FirebaseAnalytics.Param.VALUE to cartItems.sumOf { it.totalPrice },
+                    FirebaseAnalytics.Param.CURRENCY to "USD"
+                ))
 
                 clearCart()
                 loadProducts() // Refresh product list
@@ -199,9 +213,7 @@ class HomeViewModel : ViewModel() {
             isLoading = true
             repository.addProduct(product).fold(
                 onSuccess = {
-                    analytics.logEvent("product_added") {
-                        param("product_name", product.name)
-                    }
+                    analytics.logEvent("product_added", bundleOf("product_name" to product.name))
                     loadProducts()
                     onSuccess()
                 },
@@ -219,9 +231,7 @@ class HomeViewModel : ViewModel() {
             isLoading = true
             repository.updateProduct(product).fold(
                 onSuccess = {
-                    analytics.logEvent("product_updated") {
-                        param("product_id", product.id)
-                    }
+                    analytics.logEvent("product_updated", bundleOf("product_id" to product.id))
                     loadProducts()
                     onSuccess()
                 },
@@ -239,9 +249,7 @@ class HomeViewModel : ViewModel() {
             isLoading = true
             repository.deleteProduct(productId).fold(
                 onSuccess = {
-                    analytics.logEvent("product_deleted") {
-                        param("product_id", productId)
-                    }
+                    analytics.logEvent("product_deleted", bundleOf("product_id" to productId))
                     loadProducts()
                     onSuccess()
                 },
