@@ -8,6 +8,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -34,7 +35,7 @@ fun AddProductScreen(
     // Specifications
     var specKey by remember { mutableStateOf("") }
     var specValue by remember { mutableStateOf("") }
-    var specifications by remember { mutableStateOf(mutableMapOf<String, String>()) }
+    val specifications = remember { mutableStateMapOf<String, String>() }
 
     var showSuccess by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
@@ -229,7 +230,8 @@ fun AddProductScreen(
             item {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
                         text = "Mark as Recommended",
@@ -302,7 +304,8 @@ fun AddProductScreen(
                             specifications.forEach { (key, value) ->
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Text("$key: $value")
                                     IconButton(
