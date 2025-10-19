@@ -109,7 +109,7 @@ fun HomeNavigation(
                     viewModel = viewModel
                 )
             } else {
-                // Product not found, show error or go back
+                
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center

@@ -2,6 +2,8 @@ package com.example.techport.ui.login.authy
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
@@ -22,6 +24,8 @@ class AuthViewModel(
 
     private val _events = Channel<AuthEvent>(Channel.BUFFERED)
     val events = _events.receiveAsFlow()
+    private val db = Firebase.firestore
+
 
     fun signUp(first: String, last: String, nick: String?, email: String, pass: String) {
         viewModelScope.launch {
@@ -30,6 +34,15 @@ class AuthViewModel(
                 .addOnCompleteListener { task ->
                     viewModelScope.launch {
                         if (task.isSuccessful) {
+                            val user = auth.currentUser
+                            val uid = user?.uid
+                            if (uid != null) {
+                                val userMap = hashMapOf(
+                                    "firstName" to first,
+                                    "lastName" to last
+                                )
+                                db.collection("user").document(uid).set(userMap)
+                            }
                             val display = (nick?.takeIf { it.isNotBlank() }
                                 ?: listOf(first, last).filter { it.isNotBlank() }.joinToString(" ")).trim()
                             if (display.isNotEmpty()) {
@@ -91,6 +104,18 @@ class AuthViewModel(
                 .addOnCompleteListener { task ->
                     viewModelScope.launch {
                         if (task.isSuccessful) {
+                            val user = auth.currentUser
+                            val uid = user?.uid
+                            if (uid != null) {
+                                val displayName = user.displayName?.split(" ") ?: listOf()
+                                val firstName = displayName.getOrNull(0) ?: ""
+                                val lastName = displayName.getOrNull(1) ?: ""
+                                val userMap = hashMapOf(
+                                    "firstName" to firstName,
+                                    "lastName" to lastName
+                                )
+                                db.collection("user").document(uid).set(userMap)
+                            }
                             _events.send(AuthEvent.Success)
                         } else {
                             _events.send(
@@ -103,4 +128,3 @@ class AuthViewModel(
     }
 
 }
-
