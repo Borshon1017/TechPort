@@ -43,8 +43,10 @@ fun HomeScreen(
                     )
                 },
                 actions = {
-                    IconButton(onClick = onAddProductClick) {
-                        Icon(Icons.Default.Add, "Add Product")
+                    if (viewModel.currentUser?.uid == "l9z38yUqEvhHFnESGAMBoKGkT9Y2") {
+                        IconButton(onClick = onAddProductClick) {
+                            Icon(Icons.Default.Add, "Add Product")
+                        }
                     }
                     BadgedBox(
                         badge = {

@@ -13,6 +13,8 @@ import com.example.techport.data.ExternalProduct
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.ktx.analytics
 import com.google.firebase.analytics.ktx.logEvent
+import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.auth.ktx.auth
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.launch
@@ -22,6 +24,9 @@ class HomeViewModel : ViewModel() {
     private val apiService = ApiService()
     private val analytics = Firebase.analytics
     private val crashlytics = FirebaseCrashlytics.getInstance()
+
+    val currentUser: FirebaseUser?
+        get() = Firebase.auth.currentUser
 
     var products by mutableStateOf<List<Product>>(emptyList())
         private set
