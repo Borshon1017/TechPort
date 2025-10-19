@@ -1,6 +1,8 @@
 package com.example.techport.ui.main
 
 import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.material.icons.filled.Build
+import com.example.techport.ui.repair.RepairNavigation
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -37,7 +39,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.techport.NavItem
-import com.example.techport.ui.home.HomeScreen
+import com.example.techport.ui.home.HomeNavigation
 import com.example.techport.ui.map.MapScreen
 import com.example.techport.ui.profile.ProfileScreen
 import com.example.techport.ui.theme.TechPOrtTheme
@@ -46,6 +48,7 @@ import com.example.techport.ui.theme.TechPOrtTheme
 fun MainScreen() {
     val navItems = listOf(
         NavItem("Home", Icons.Default.Home, "home"),
+        NavItem("Repairs", Icons.Default.Build, "repairs"),
         NavItem("Map", Icons.Default.Place, "map"),
         NavItem("Profile", Icons.Default.Person, "profile")
     )
@@ -55,12 +58,12 @@ fun MainScreen() {
         bottomBar = {
             BottomNavBar(navItems = navItems, selectedItem = selectedItem) { selectedItem = it }
         },
-        // Set a transparent background to see the floating bar correctly
         containerColor = Color.White.copy(alpha = 0.05f)
     ) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)) {
             when (selectedItem.route) {
-                "home" -> HomeScreen()
+                "home" -> HomeNavigation()
+                "repairs" -> RepairNavigation()
                 "map" -> MapScreen()
                 "profile" -> ProfileScreen()
             }
@@ -74,7 +77,6 @@ fun BottomNavBar(
     selectedItem: NavItem,
     onItemSelected: (NavItem) -> Unit
 ) {
-    // A Box to contain the bar and give it padding, making it "float"
     Box(modifier = Modifier.padding(start = 24.dp, end = 24.dp, bottom = 24.dp, top = 8.dp)) {
         Surface(
             modifier = Modifier.fillMaxWidth().height(64.dp),
@@ -83,7 +85,7 @@ fun BottomNavBar(
             shadowElevation = 8.dp
         ) {
             val itemCount = navItems.size
-            val barWidth = LocalConfiguration.current.screenWidthDp.dp - 48.dp // 24dp padding on each side
+            val barWidth = LocalConfiguration.current.screenWidthDp.dp - 48.dp
             val itemWidth = barWidth / itemCount
             val selectedIndex = navItems.indexOf(selectedItem)
 
@@ -93,19 +95,16 @@ fun BottomNavBar(
                 label = "indicatorOffset"
             )
 
-            // Layered container
             Box(modifier = Modifier.fillMaxSize()) {
-                // Layer 1: The sliding indicator
                 Box(
                     modifier = Modifier
                         .offset(x = indicatorOffset)
                         .width(itemWidth)
                         .fillMaxHeight()
-                        .padding(vertical = 4.dp, horizontal = (itemWidth - 56.dp) / 2) // Center the 56dp circle
+                        .padding(vertical = 4.dp, horizontal = (itemWidth - 56.dp) / 2)
                         .background(Color.White, CircleShape)
                 )
 
-                // Layer 2: The row of icons
                 Row(
                     modifier = Modifier.fillMaxSize(),
                     horizontalArrangement = Arrangement.SpaceAround,
@@ -137,7 +136,7 @@ fun BottomNavItem(
             .fillMaxHeight()
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
-                indication = null, // No ripple effect
+                indication = null,
                 onClick = { onItemSelected(item) }
             ),
         contentAlignment = Alignment.Center
