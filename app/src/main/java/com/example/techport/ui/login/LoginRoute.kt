@@ -1,7 +1,9 @@
 package com.example.techport.ui.login
 
 import android.app.Activity
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
@@ -15,10 +17,12 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.techport.R
 import com.example.techport.ui.login.authy.AuthEvent
 import com.example.techport.ui.login.authy.AuthViewModel
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.auth.api.identity.Identity
+import com.google.android.gms.common.api.ApiException
+import com.google.android.gms.common.api.CommonStatusCodes
 import kotlinx.coroutines.launch
 
+@Suppress("DEPRECATION") // Suppress warnings for Google Identity library
 @Composable
 fun LoginRoute(
     onLoginSuccess: () -> Unit,
@@ -32,32 +36,43 @@ fun LoginRoute(
     var showReset by remember { mutableStateOf(false) }
     var resetEmail by remember { mutableStateOf("") }
 
-    // --- Google sign-in setup ---
+    // --- Google sign-in setup using the new Identity library ---
     val context = LocalContext.current
-    val gso = remember {
-        GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken(context.getString(R.string.default_web_client_id))
-            .requestEmail()
+    val oneTapClient = remember { Identity.getSignInClient(context) }
+    val signInIntentRequest = remember {
+        com.google.android.gms.auth.api.identity.GetSignInIntentRequest.builder()
+            .setServerClientId(context.getString(R.string.default_web_client_id))
             .build()
     }
-    val googleClient = remember { GoogleSignIn.getClient(context, gso) }
 
     val googleLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.StartActivityForResult()
-    ) { res ->
-        if (res.resultCode == Activity.RESULT_OK) {
-            val task = GoogleSignIn.getSignedInAccountFromIntent(res.data)
-            val account = task.result
-            val idToken = account?.idToken
-            if (!idToken.isNullOrEmpty()) {
-                vm.loginWithGoogle(idToken)
-            } else {
-                scope.launch { host.showSnackbar("Google sign-in failed.") }
+        contract = ActivityResultContracts.StartIntentSenderForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            try {
+                val credential = oneTapClient.getSignInCredentialFromIntent(result.data)
+                val idToken = credential.googleIdToken
+                if (idToken != null) {
+                    vm.loginWithGoogle(idToken)
+                } else {
+                    scope.launch { host.showSnackbar("Google sign-in failed: No ID token found.") }
+                }
+            } catch (e: ApiException) {
+                when (e.statusCode) {
+                    CommonStatusCodes.CANCELED -> {
+                        scope.launch { host.showSnackbar("Google sign-in canceled.") }
+                    }
+                    else -> {
+                        Log.e("LoginRoute", "Google sign-in credential error", e)
+                        scope.launch { host.showSnackbar("Could not get credential from result: ${e.localizedMessage}") }
+                    }
+                }
             }
         } else {
-            scope.launch { host.showSnackbar("Google sign-in canceled.") }
+             scope.launch { host.showSnackbar("Google sign-in failed.") }
         }
     }
+
     // --- end Google setup ---
 
     LaunchedEffect(Unit) {
@@ -86,7 +101,24 @@ fun LoginRoute(
                     showReset = true
                 },
                 onSignUp = onSignUp,
-                onGoogleLogin = { googleLauncher.launch(googleClient.signInIntent) } // <- 4b
+                onGoogleLogin = {
+                    oneTapClient.getSignInIntent(signInIntentRequest)
+                        .addOnSuccessListener { pendingIntent ->
+                            try {
+                                // Correctly build the IntentSenderRequest from the PendingIntent's IntentSender
+                                val intentSenderRequest =
+                                    IntentSenderRequest.Builder(pendingIntent.intentSender).build()
+                                googleLauncher.launch(intentSenderRequest)
+                            } catch (e: Exception) {
+                                Log.e("LoginRoute", "Failed to launch Google Sign-In intent.", e)
+                                scope.launch { host.showSnackbar("Couldn't start Google sign-in: ${e.localizedMessage}") }
+                            }
+                        }
+                        .addOnFailureListener { e ->
+                            Log.e("LoginRoute", "Google Sign-In get intent failed.", e)
+                            scope.launch { host.showSnackbar("Google sign-in failed: ${e.localizedMessage}") }
+                        }
+                }
             )
         }
     }

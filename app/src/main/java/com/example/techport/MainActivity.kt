@@ -68,7 +68,13 @@ fun AppNavigation() {
             )
         }
 
-        composable(Routes.HOME) { MainScreen() }
+        composable(Routes.HOME) { 
+            MainScreen(onLogout = {
+                nav.navigate(Routes.LOGIN) {
+                    popUpTo(Routes.HOME) { inclusive = true }
+                }
+            })
+         }
         composable(Routes.MAP)  { MapScreen() }
     }
 }

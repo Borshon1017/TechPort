@@ -15,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -36,16 +37,18 @@ fun HomeScreen(
         topBar = {
             TopAppBar(
                 title = {
+                    val currentUser = viewModel.currentUser
                     Text(
-                        "TechPort",
+                        text = if (!currentUser?.displayName.isNullOrEmpty()) "Welcome back, ${currentUser.displayName}" else "TechPort",
                         style = MaterialTheme.typography.headlineMedium,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
                     )
                 },
                 actions = {
                     if (viewModel.currentUser?.uid == "l9z38yUqEvhHFnESGAMBoKGkT9Y2") {
                         IconButton(onClick = onAddProductClick) {
-                            Icon(Icons.Default.Add, "Add Product")
+                            Icon(Icons.Default.Add, "Add Product", tint = Color.White)
                         }
                     }
                     BadgedBox(
@@ -56,12 +59,12 @@ fun HomeScreen(
                         }
                     ) {
                         IconButton(onClick = onCartClick) {
-                            Icon(Icons.Default.ShoppingCart, "Cart")
+                            Icon(Icons.Default.ShoppingCart, "Cart", tint = Color.White)
                         }
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                    containerColor = Color.Black
                 )
             )
         }

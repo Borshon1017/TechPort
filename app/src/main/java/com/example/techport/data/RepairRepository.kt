@@ -1,5 +1,6 @@
 package com.example.techport.data
 
+import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import kotlinx.coroutines.tasks.await
@@ -8,13 +9,42 @@ class RepairRepository {
     private val db = FirebaseFirestore.getInstance()
     private val repairsCollection = db.collection("repairs")
 
+    private fun docToRepair(doc: DocumentSnapshot): Repair? {
+        return try {
+            val issueImageUrlsRaw = doc.get("issueImageUrls")
+            val urls = if (issueImageUrlsRaw is List<*>) {
+                issueImageUrlsRaw.mapNotNull { it as? String }
+            } else {
+                emptyList()
+            }
+            Repair(
+                id = doc.getString("id") ?: "",
+                userId = doc.getString("userId") ?: "",
+                userName = doc.getString("userName") ?: "",
+                productId = doc.getString("productId") ?: "",
+                productName = doc.getString("productName") ?: "",
+                productImageUrl = doc.getString("productImageUrl") ?: "",
+                issueDescription = doc.getString("issueDescription") ?: "",
+                issueImageUrls = urls,
+                status = RepairStatus.fromString(doc.getString("status") ?: "PENDING"),
+                estimatedCost = doc.getDouble("estimatedCost") ?: 0.0,
+                actualCost = doc.getDouble("actualCost") ?: 0.0,
+                technicianNotes = doc.getString("technicianNotes") ?: "",
+                createdAt = doc.getLong("createdAt") ?: System.currentTimeMillis(),
+                updatedAt = doc.getLong("updatedAt") ?: System.currentTimeMillis(),
+                completedAt = doc.getLong("completedAt")
+            )
+        } catch (e: Exception) {
+            null
+        }
+    }
+
     // Create
     suspend fun createRepair(repair: Repair): Result<String> {
         return try {
             val docRef = repairsCollection.document()
             val repairWithId = repair.copy(id = docRef.id)
 
-            // Convert enum to string for Firestore
             val repairData = hashMapOf(
                 "id" to repairWithId.id,
                 "userId" to repairWithId.userId,
@@ -47,30 +77,7 @@ class RepairRepository {
                 .orderBy("createdAt", Query.Direction.DESCENDING)
                 .get()
                 .await()
-
-            val repairs = snapshot.documents.mapNotNull { doc ->
-                try {
-                    Repair(
-                        id = doc.getString("id") ?: "",
-                        userId = doc.getString("userId") ?: "",
-                        userName = doc.getString("userName") ?: "",
-                        productId = doc.getString("productId") ?: "",
-                        productName = doc.getString("productName") ?: "",
-                        productImageUrl = doc.getString("productImageUrl") ?: "",
-                        issueDescription = doc.getString("issueDescription") ?: "",
-                        issueImageUrls = doc.get("issueImageUrls") as? List<String> ?: emptyList(),
-                        status = RepairStatus.fromString(doc.getString("status") ?: "PENDING"),
-                        estimatedCost = doc.getDouble("estimatedCost") ?: 0.0,
-                        actualCost = doc.getDouble("actualCost") ?: 0.0,
-                        technicianNotes = doc.getString("technicianNotes") ?: "",
-                        createdAt = doc.getLong("createdAt") ?: System.currentTimeMillis(),
-                        updatedAt = doc.getLong("updatedAt") ?: System.currentTimeMillis(),
-                        completedAt = doc.getLong("completedAt")
-                    )
-                } catch (e: Exception) {
-                    null
-                }
-            }
+            val repairs = snapshot.documents.mapNotNull { doc -> docToRepair(doc) }
             Result.success(repairs)
         } catch (e: Exception) {
             Result.failure(e)
@@ -85,30 +92,7 @@ class RepairRepository {
                 .orderBy("createdAt", Query.Direction.DESCENDING)
                 .get()
                 .await()
-
-            val repairs = snapshot.documents.mapNotNull { doc ->
-                try {
-                    Repair(
-                        id = doc.getString("id") ?: "",
-                        userId = doc.getString("userId") ?: "",
-                        userName = doc.getString("userName") ?: "",
-                        productId = doc.getString("productId") ?: "",
-                        productName = doc.getString("productName") ?: "",
-                        productImageUrl = doc.getString("productImageUrl") ?: "",
-                        issueDescription = doc.getString("issueDescription") ?: "",
-                        issueImageUrls = doc.get("issueImageUrls") as? List<String> ?: emptyList(),
-                        status = RepairStatus.fromString(doc.getString("status") ?: "PENDING"),
-                        estimatedCost = doc.getDouble("estimatedCost") ?: 0.0,
-                        actualCost = doc.getDouble("actualCost") ?: 0.0,
-                        technicianNotes = doc.getString("technicianNotes") ?: "",
-                        createdAt = doc.getLong("createdAt") ?: System.currentTimeMillis(),
-                        updatedAt = doc.getLong("updatedAt") ?: System.currentTimeMillis(),
-                        completedAt = doc.getLong("completedAt")
-                    )
-                } catch (e: Exception) {
-                    null
-                }
-            }
+            val repairs = snapshot.documents.mapNotNull { doc -> docToRepair(doc) }
             Result.success(repairs)
         } catch (e: Exception) {
             Result.failure(e)
@@ -123,30 +107,7 @@ class RepairRepository {
                 .orderBy("createdAt", Query.Direction.DESCENDING)
                 .get()
                 .await()
-
-            val repairs = snapshot.documents.mapNotNull { doc ->
-                try {
-                    Repair(
-                        id = doc.getString("id") ?: "",
-                        userId = doc.getString("userId") ?: "",
-                        userName = doc.getString("userName") ?: "",
-                        productId = doc.getString("productId") ?: "",
-                        productName = doc.getString("productName") ?: "",
-                        productImageUrl = doc.getString("productImageUrl") ?: "",
-                        issueDescription = doc.getString("issueDescription") ?: "",
-                        issueImageUrls = doc.get("issueImageUrls") as? List<String> ?: emptyList(),
-                        status = RepairStatus.fromString(doc.getString("status") ?: "PENDING"),
-                        estimatedCost = doc.getDouble("estimatedCost") ?: 0.0,
-                        actualCost = doc.getDouble("actualCost") ?: 0.0,
-                        technicianNotes = doc.getString("technicianNotes") ?: "",
-                        createdAt = doc.getLong("createdAt") ?: System.currentTimeMillis(),
-                        updatedAt = doc.getLong("updatedAt") ?: System.currentTimeMillis(),
-                        completedAt = doc.getLong("completedAt")
-                    )
-                } catch (e: Exception) {
-                    null
-                }
-            }
+            val repairs = snapshot.documents.mapNotNull { doc -> docToRepair(doc) }
             Result.success(repairs)
         } catch (e: Exception) {
             Result.failure(e)
@@ -157,25 +118,7 @@ class RepairRepository {
     suspend fun getRepair(id: String): Result<Repair?> {
         return try {
             val doc = repairsCollection.document(id).get().await()
-            val repair = if (doc.exists()) {
-                Repair(
-                    id = doc.getString("id") ?: "",
-                    userId = doc.getString("userId") ?: "",
-                    userName = doc.getString("userName") ?: "",
-                    productId = doc.getString("productId") ?: "",
-                    productName = doc.getString("productName") ?: "",
-                    productImageUrl = doc.getString("productImageUrl") ?: "",
-                    issueDescription = doc.getString("issueDescription") ?: "",
-                    issueImageUrls = doc.get("issueImageUrls") as? List<String> ?: emptyList(),
-                    status = RepairStatus.fromString(doc.getString("status") ?: "PENDING"),
-                    estimatedCost = doc.getDouble("estimatedCost") ?: 0.0,
-                    actualCost = doc.getDouble("actualCost") ?: 0.0,
-                    technicianNotes = doc.getString("technicianNotes") ?: "",
-                    createdAt = doc.getLong("createdAt") ?: System.currentTimeMillis(),
-                    updatedAt = doc.getLong("updatedAt") ?: System.currentTimeMillis(),
-                    completedAt = doc.getLong("completedAt")
-                )
-            } else null
+            val repair = if (doc.exists()) docToRepair(doc) else null
             Result.success(repair)
         } catch (e: Exception) {
             Result.failure(e)

@@ -27,9 +27,10 @@ class HomeViewModel : ViewModel() {
     private val analytics = Firebase.analytics
     private val crashlytics = FirebaseCrashlytics.getInstance()
     private val db = Firebase.firestore
+    private val auth = Firebase.auth
 
-    val currentUser: FirebaseUser?
-        get() = Firebase.auth.currentUser
+    var currentUser by mutableStateOf(auth.currentUser)
+        private set
 
     var products by mutableStateOf<List<Product>>(emptyList())
         private set
@@ -59,6 +60,10 @@ class HomeViewModel : ViewModel() {
         loadProducts()
         loadRecommendedProducts()
         loadExternalProducts()
+
+        auth.addAuthStateListener {
+            currentUser = it.currentUser
+        }
     }
 
     fun loadProducts() {

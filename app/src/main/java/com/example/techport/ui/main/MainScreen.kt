@@ -49,7 +49,7 @@ import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 
 @Composable
-fun MainScreen() {
+fun MainScreen(onLogout: () -> Unit) {
     val isAdmin = Firebase.auth.currentUser?.uid == "l9z38yUqEvhHFnESGAMBoKGkT9Y2"
 
     val navItems = remember(isAdmin) {
@@ -78,7 +78,7 @@ fun MainScreen() {
                 "repairs" -> RepairNavigation()
                 "history" -> HistoryNavigation()
                 "map" -> MapScreen()
-                "profile" -> ProfileScreen()
+                "profile" -> ProfileScreen(onLogout = onLogout)
             }
         }
     }
@@ -167,6 +167,6 @@ fun BottomNavItem(
 @Composable
 fun MainScreenPreview() {
     TechPOrtTheme {
-        MainScreen()
+        MainScreen(onLogout = {})
     }
 }
