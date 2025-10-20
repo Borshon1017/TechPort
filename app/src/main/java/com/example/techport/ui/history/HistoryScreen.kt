@@ -245,22 +245,22 @@ private fun formatTimestamp(timestamp: Long): String {
 @Composable
 fun StatusBadge(status: RepairStatus) {
     val (backgroundColor, textColor) = when (status) {
-        RepairStatus.PENDING -> MaterialTheme.colorScheme.secondaryContainer to MaterialTheme.colorScheme.onSecondaryContainer
-        RepairStatus.IN_PROGRESS -> MaterialTheme.colorScheme.primaryContainer to MaterialTheme.colorScheme.onPrimaryContainer
-        RepairStatus.COMPLETED -> MaterialTheme.colorScheme.tertiaryContainer to MaterialTheme.colorScheme.onTertiaryContainer
-        RepairStatus.CANCELLED -> MaterialTheme.colorScheme.errorContainer to MaterialTheme.colorScheme.onErrorContainer
+        RepairStatus.PENDING -> Color(0xFFFFFBEA) to Color(0xFFB45309)
+        RepairStatus.IN_PROGRESS -> Color(0xFFEFF6FF) to Color(0xFF1D4ED8)
+        RepairStatus.COMPLETED -> Color(0xFFF0FDF4) to Color(0xFF16A34A)
+        RepairStatus.CANCELLED -> Color(0xFFFEF2F2) to Color(0xFFB91C1C)
     }
 
     Surface(
         color = backgroundColor,
-        shape = RoundedCornerShape(8.dp)
+        shape = RoundedCornerShape(16.dp)
     ) {
         Text(
             text = status.displayName,
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-            style = MaterialTheme.typography.labelSmall,
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+            style = MaterialTheme.typography.labelMedium,
             color = textColor,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.Medium
         )
     }
 }
