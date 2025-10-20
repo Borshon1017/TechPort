@@ -83,7 +83,7 @@ fun HomeScreen(
                     )
                 },
                 actions = {
-                    if (viewModel.currentUser?.uid == "l9z38yUqEvhHFnESGAMBoKGkT9Y2") {
+                    if (viewModel.userRole == "admin") {
                         IconButton(onClick = onAddProductClick) {
                             Icon(Icons.Default.Add, "Add Product", tint = Color.White)
                         }

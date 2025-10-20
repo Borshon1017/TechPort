@@ -8,6 +8,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import com.google.firebase.auth.GoogleAuthProvider
+import com.google.firebase.firestore.SetOptions
 
 
 sealed class AuthEvent {
@@ -39,9 +40,11 @@ class AuthViewModel(
                             if (uid != null) {
                                 val userMap = hashMapOf(
                                     "firstName" to first,
-                                    "lastName" to last
+                                    "lastName" to last,
+                                    // default role for new users
+                                    "role" to "customer"
                                 )
-                                db.collection("user").document(uid).set(userMap)
+                                db.collection("user").document(uid).set(userMap, SetOptions.merge())
                             }
                             val display = (nick?.takeIf { it.isNotBlank() }
                                 ?: listOf(first, last).filter { it.isNotBlank() }.joinToString(" ")).trim()
@@ -112,9 +115,11 @@ class AuthViewModel(
                                 val lastName = displayName.getOrNull(1) ?: ""
                                 val userMap = hashMapOf(
                                     "firstName" to firstName,
-                                    "lastName" to lastName
+                                    "lastName" to lastName,
+                                    // default role for users signing in with Google
+                                    "role" to "customer"
                                 )
-                                db.collection("user").document(uid).set(userMap)
+                                db.collection("user").document(uid).set(userMap, SetOptions.merge())
                             }
                             _events.send(AuthEvent.Success)
                         } else {

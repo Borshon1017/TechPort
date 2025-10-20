@@ -42,7 +42,7 @@ fun ProductDetailScreen(
                 },
                 actions = {
                     // Admin edit button
-                    if (viewModel.currentUser?.uid == "l9z38yUqEvhHFnESGAMBoKGkT9Y2") {
+                    if (viewModel.userRole == "admin") {
                         IconButton(onClick = onEditClick) {
                             Icon(Icons.Default.Edit, "Edit Product")
                         }

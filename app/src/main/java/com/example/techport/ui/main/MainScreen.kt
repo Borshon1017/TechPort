@@ -45,12 +45,12 @@ import com.example.techport.ui.home.HomeNavigation
 import com.example.techport.ui.map.MapScreen
 import com.example.techport.ui.profile.ProfileScreen
 import com.example.techport.ui.theme.TechPOrtTheme
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.techport.ui.home.HomeViewModel
 
 @Composable
-fun MainScreen(onLogout: () -> Unit) {
-    val isAdmin = Firebase.auth.currentUser?.uid == "l9z38yUqEvhHFnESGAMBoKGkT9Y2"
+fun MainScreen(onLogout: () -> Unit, viewModel: HomeViewModel = viewModel()) {
+    val isAdmin = viewModel.userRole == "admin"
 
     val navItems = remember(isAdmin) {
         listOf(

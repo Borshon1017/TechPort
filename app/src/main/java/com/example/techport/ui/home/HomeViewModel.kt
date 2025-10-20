@@ -19,6 +19,7 @@ import com.google.firebase.auth.ktx.auth
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.launch
 
 class HomeViewModel : ViewModel() {
@@ -30,6 +31,10 @@ class HomeViewModel : ViewModel() {
     private val auth = Firebase.auth
 
     var currentUser by mutableStateOf(auth.currentUser)
+        private set
+
+    // role can be "admin" or "customer"; default null until loaded
+    var userRole by mutableStateOf<String?>(null)
         private set
 
     var products by mutableStateOf<List<Product>>(emptyList())
@@ -63,6 +68,33 @@ class HomeViewModel : ViewModel() {
 
         auth.addAuthStateListener {
             currentUser = it.currentUser
+            // load role whenever auth state changes
+            loadUserRole()
+        }
+        // try loading role at startup as well
+        loadUserRole()
+    }
+
+    fun loadUserRole() {
+        val uid = auth.currentUser?.uid ?: run {
+            userRole = null
+            return
+        }
+        viewModelScope.launch {
+            try {
+                val doc = db.collection("user").document(uid).get().await()
+                if (doc.exists()) {
+                    val role = doc.getString("role")
+                    userRole = role ?: "customer"
+                } else {
+                    // no user doc found -> default to customer
+                    userRole = "customer"
+                }
+            } catch (e: Exception) {
+                // on error, keep previous role or default to customer
+                userRole = userRole ?: "customer"
+                crashlytics.recordException(e)
+            }
         }
     }
 
