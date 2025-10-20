@@ -218,8 +218,19 @@ fun HomeScreen(
                 )
             }
 
-            // Recommended Products
-            if (viewModel.recommendedProducts.isNotEmpty()) {
+            // Recommended Products (filtered by search)
+            val recommendedFiltered = if (viewModel.searchQuery.isBlank()) {
+                viewModel.recommendedProducts
+            } else {
+                val q = viewModel.searchQuery
+                viewModel.recommendedProducts.filter { p ->
+                    p.name.contains(q, ignoreCase = true) ||
+                        p.description.contains(q, ignoreCase = true) ||
+                        p.category.contains(q, ignoreCase = true)
+                }
+            }
+
+            if (recommendedFiltered.isNotEmpty()) {
                 item {
                     Text(
                         text = "Recommended for You",
@@ -228,7 +239,7 @@ fun HomeScreen(
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp)
                     )
                     RecommendedProductsRow(
-                        products = viewModel.recommendedProducts,
+                        products = recommendedFiltered,
                         onProductClick = onProductClick
                     )
                 }
