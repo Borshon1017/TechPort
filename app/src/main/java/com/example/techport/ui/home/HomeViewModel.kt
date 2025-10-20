@@ -162,11 +162,10 @@ class HomeViewModel : ViewModel() {
 
     fun addToCart(product: Product) {
         val existingItem = cartItems.find { it.product.id == product.id }
-        if (existingItem != null) {
-            existingItem.quantity++
-            cartItems = cartItems.toList() // Trigger recomposition
+        cartItems = if (existingItem != null) {
+            cartItems.map { if (it.product.id == product.id) it.copy(quantity = it.quantity + 1) else it }
         } else {
-            cartItems = cartItems + CartItem(product, 1)
+            cartItems + CartItem(product, 1)
         }
         analytics.logEvent("add_to_cart", bundleOf(
             FirebaseAnalytics.Param.ITEM_ID to product.id,
@@ -178,8 +177,7 @@ class HomeViewModel : ViewModel() {
         if (quantity <= 0) {
             removeFromCart(cartItem)
         } else {
-            cartItem.quantity = quantity
-            cartItems = cartItems.toList()
+            cartItems = cartItems.map { if (it.product.id == cartItem.product.id) it.copy(quantity = quantity) else it }
         }
     }
 

@@ -8,6 +8,8 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
@@ -76,6 +78,9 @@ fun CartScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(56.dp)
+                                .shadow(elevation = 8.dp, spotColor = Color.Blue, shape = MaterialTheme.shapes.extraLarge),
+                            shape = MaterialTheme.shapes.extraLarge,
+                            colors = ButtonDefaults.buttonColors(containerColor = Color.Black, contentColor = Color.White)
                         ) {
                             Icon(Icons.Default.ShoppingCartCheckout, contentDescription = null)
                             Spacer(Modifier.width(8.dp))

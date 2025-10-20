@@ -3,6 +3,8 @@ package com.example.techport.ui.profile
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.lazy.LazyRow
@@ -11,11 +13,13 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
@@ -54,25 +58,26 @@ fun ProfileScreen(onLogout: () -> Unit, viewModel: ProfileViewModel = viewModel(
                     contentScale = ContentScale.Crop
                 )
             } else {
-                // default circle with icon
-                Card(
-                    shape = CircleShape,
-                    colors = CardDefaults.cardColors(containerColor = Color.LightGray),
-                    modifier = Modifier.size(128.dp)
-                ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Icon(Icons.Filled.Lock, contentDescription = null, modifier = Modifier.size(64.dp))
-                    }
+                // default circle with icon, match size/clip/border for alignment
+                Box(modifier = Modifier
+                    .size(128.dp)
+                    .clip(CircleShape)
+                    .border(width = 2.dp, color = Color.LightGray, shape = CircleShape)
+                    .background(Color.LightGray), contentAlignment = Alignment.Center) {
+                    Icon(Icons.Filled.Person, contentDescription = null, modifier = Modifier.size(64.dp), tint = Color.White)
                 }
             }
         }
 
-        Text(
-            text = "Change Profile picture",
-            modifier = Modifier
-                .clickable { showEditProfileDialog = true }
-                .padding(8.dp)
-        )
+        OutlinedButton(
+            onClick = { showEditProfileDialog = true },
+            shape = MaterialTheme.shapes.extraLarge,
+            border = BorderStroke(1.dp, Color.LightGray),
+            colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Black),
+            modifier = Modifier.fillMaxWidth(0.6f)
+        ) {
+            Text("Change Profile picture", style = MaterialTheme.typography.bodyMedium)
+        }
 
         Spacer(modifier = Modifier.height(24.dp))
 
@@ -212,7 +217,13 @@ fun LogoutDialog(onConfirm: () -> Unit, onDismiss: () -> Unit) {
         title = { Text("Logout") },
         text = { Text("Are you sure you want to log out?") },
         confirmButton = {
-            Button(onClick = onConfirm) {
+            Button(
+                onClick = onConfirm,
+                modifier = Modifier
+                    .shadow(elevation = 8.dp, spotColor = Color.Red, shape = MaterialTheme.shapes.extraLarge),
+                shape = MaterialTheme.shapes.extraLarge,
+                colors = ButtonDefaults.buttonColors(containerColor = Color.Black, contentColor = Color.White)
+            ) {
                 Text("Logout")
             }
         },

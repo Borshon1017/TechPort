@@ -1,6 +1,7 @@
 package com.example.techport.ui.home
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -24,6 +25,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.ShoppingCart
@@ -48,6 +50,12 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -87,31 +95,33 @@ fun HomeScreen(
                     Box(modifier = Modifier.fillMaxHeight(), contentAlignment = Alignment.CenterStart) {
                         if (!photoUrl.isNullOrBlank()) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Box(modifier = Modifier
-                                    .size(50.dp)
-                                    .graphicsLayer { translationY = -liftPx }
-                                    .clickable(onClick = { /* future: navigate to profile */ })
-                                    .drawBehind {
-                                        // subtle blue glow: radial gradient behind the avatar
-                                        val radius = min(size.width, size.height) / 1.2f
-                                        val centerOffset = Offset(size.width / 2f, size.height / 2f)
-                                        drawCircle(
-                                            brush = Brush.radialGradient(
-                                                colors = listOf(Color(0x803497FF), Color.Transparent),
-                                                center = centerOffset,
-                                                radius = radius
-                                            ),
-                                            radius = radius,
-                                            center = centerOffset
-                                        )
-                                    }
+                                Box(
+                                    modifier = Modifier
+                                        .size(56.dp)
+                                        .graphicsLayer { translationY = -liftPx }
+                                        .clickable(onClick = { /* future: navigate to profile */ })
+                                        .drawBehind {
+                                            // subtle blue glow: radial gradient behind the avatar
+                                            val radius = min(size.width, size.height) / 1.2f
+                                            val centerOffset = Offset(size.width / 2f, size.height / 2f)
+                                            drawCircle(
+                                                brush = Brush.radialGradient(
+                                                    colors = listOf(Color(0x803497FF), Color.Transparent),
+                                                    center = centerOffset,
+                                                    radius = radius
+                                                ),
+                                                radius = radius,
+                                                center = centerOffset
+                                            )
+                                        }
                                 ) {
                                     AsyncImage(
                                         model = photoUrl,
                                         contentDescription = "Profile",
                                         modifier = Modifier
                                             .fillMaxSize()
-                                            .clip(CircleShape),
+                                            .clip(CircleShape)
+                                            .border(width = 2.dp, color = Color.LightGray, shape = CircleShape),
                                         contentScale = ContentScale.Crop
                                     )
                                 }
@@ -123,7 +133,11 @@ fun HomeScreen(
                                     .size(56.dp)
                                     .graphicsLayer { translationY = -liftPx }
                                     .clip(CircleShape)
-                                    .background(Color.LightGray))
+                                    .border(width = 2.dp, color = Color.LightGray, shape = CircleShape)
+                                    .background(Color.LightGray)) {
+                                    // placeholder icon centered (profile)
+                                    Icon(Icons.Filled.Person, contentDescription = null, tint = Color.White, modifier = Modifier.align(Alignment.Center).size(28.dp))
+                                }
                                 Spacer(modifier = Modifier.width(12.dp))
                             }
                         }
@@ -146,6 +160,17 @@ fun HomeScreen(
                             Icon(Icons.Default.Add, "Add Product", tint = Color.White)
                         }
                     }
+                    var pulse by remember { mutableStateOf(false) }
+                    // Trigger pulse when cart size changes
+                    LaunchedEffect(viewModel.cartItems.size) {
+                        // briefly toggle pulse
+                        pulse = true
+                        kotlinx.coroutines.delay(300)
+                        pulse = false
+                    }
+
+                    val scale by animateFloatAsState(targetValue = if (pulse) 1.18f else 1f, animationSpec = tween(durationMillis = 300))
+
                     BadgedBox(
                         badge = {
                             if (viewModel.cartItems.isNotEmpty()) {
@@ -153,7 +178,7 @@ fun HomeScreen(
                             }
                         }
                     ) {
-                        IconButton(onClick = onCartClick) {
+                        IconButton(onClick = onCartClick, modifier = Modifier.graphicsLayer { scaleX = scale; scaleY = scale }) {
                             Icon(Icons.Default.ShoppingCart, "Cart", tint = Color.White)
                         }
                     }
