@@ -11,9 +11,12 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.example.techport.data.Product
@@ -77,11 +80,22 @@ fun ProductDetailScreen(
                             viewModel.addToCart(product)
                             showAddedToast = true
                         },
-                        modifier = Modifier.height(56.dp)
+                        modifier = Modifier
+                            .height(56.dp)
+                            .shadow(
+                                elevation = 8.dp,
+                                spotColor = Color.Blue,
+                                shape = MaterialTheme.shapes.extraLarge
+                            ),
+                        shape = MaterialTheme.shapes.extraLarge,
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.Black,
+                            contentColor = Color.White
+                        )
                     ) {
                         Icon(Icons.Default.ShoppingCart, contentDescription = null)
                         Spacer(Modifier.width(8.dp))
-                        Text("Add to Cart")
+                        Text("Add to Cart", fontSize = 18.sp)
                     }
                 }
             }

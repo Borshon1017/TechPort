@@ -4,7 +4,6 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -30,6 +29,8 @@ import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -37,15 +38,14 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -225,28 +225,17 @@ fun HomeScreen(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchBar(
     query: String,
     onQueryChange: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val interactionSource = remember { MutableInteractionSource() }
-    val isFocused by interactionSource.collectIsFocusedAsState()
-    val glowColor = if (isFocused) Color(0x99388BFF) else Color.Transparent
-
-    TextField(
+    OutlinedTextField(
         value = query,
         onValueChange = onQueryChange,
         modifier = modifier
-            .fillMaxWidth()
-            .shadow(
-                elevation = if (isFocused) 10.dp else 3.dp,
-                spotColor = glowColor,
-                ambientColor = glowColor,
-                shape = CircleShape
-            ),
+            .fillMaxWidth(),
         placeholder = { Text("Search products...") },
         leadingIcon = { Icon(Icons.Default.Search, "Search") },
         trailingIcon = {
@@ -258,14 +247,15 @@ fun SearchBar(
         },
         singleLine = true,
         shape = CircleShape,
-        colors = TextFieldDefaults.colors(
-            focusedContainerColor = Color(0xFFF5F5F5),
-            unfocusedContainerColor = Color(0xFFF0F0F0),
-            focusedIndicatorColor = Color.Transparent,
-            unfocusedIndicatorColor = Color.Transparent,
-            disabledIndicatorColor = Color.Transparent
-        ),
-        interactionSource = interactionSource
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedBorderColor = Color.Black,
+            unfocusedBorderColor = Color.LightGray,
+            focusedTextColor = Color.Black,
+            unfocusedTextColor = Color.Black,
+            cursorColor = Color.Black,
+            focusedLabelColor = Color.Gray,
+            unfocusedLabelColor = Color.Gray
+        )
     )
 }
 
@@ -295,33 +285,43 @@ fun CategoryChip(
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
-    val backgroundColor = if (isSelected) Color.Black else Color(0xFFF0F0F0)
-    val contentColor = if (isSelected) Color.White else Color.Black
-
-    Surface(
-        modifier = Modifier.clickable(onClick = onClick),
-        shape = RoundedCornerShape(20.dp),
-        color = backgroundColor,
-        shadowElevation = if (isSelected) 8.dp else 2.dp,
-        tonalElevation = if (isSelected) 0.dp else 2.dp,
-    ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
-            verticalAlignment = Alignment.CenterVertically
+    if (isSelected) {
+        Button(
+            onClick = onClick,
+            shape = MaterialTheme.shapes.extraLarge,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color.Black,
+                contentColor = Color.White
+            )
         ) {
-            if (isSelected) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Icon(
                     imageVector = Icons.Default.Star,
                     contentDescription = null,
-                    tint = contentColor,
+                    tint = Color.White,
                     modifier = Modifier.size(18.dp)
                 )
                 Spacer(Modifier.width(8.dp))
+                Text(
+                    text = text,
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.bodyMedium
+                )
             }
+        }
+    } else {
+        OutlinedButton(
+            onClick = onClick,
+            shape = MaterialTheme.shapes.extraLarge,
+            border = BorderStroke(1.dp, Color.LightGray),
+            colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Black)
+        ) {
             Text(
                 text = text,
-                color = contentColor,
-                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                fontWeight = FontWeight.Normal,
                 style = MaterialTheme.typography.bodyMedium
             )
         }
@@ -376,26 +376,40 @@ fun RecommendedProductCard(
                         .background(
                             Brush.verticalGradient(
                                 colors = listOf(
-                                    MaterialTheme.colorScheme.surface.copy(alpha = 0f),
-                                    MaterialTheme.colorScheme.surface.copy(alpha = 0.8f)
+                                    Color.Transparent,
+                                    Color.Black.copy(alpha = 0.8f)
                                 ),
                                 startY = 100f
                             )
                         )
                 )
-                Surface(
+                OutlinedButton(
+                    onClick = { },
+                    enabled = false,
                     modifier = Modifier
                         .padding(8.dp)
                         .align(Alignment.TopEnd),
-                    color = MaterialTheme.colorScheme.primary,
-                    shape = RoundedCornerShape(12.dp)
+                    shape = MaterialTheme.shapes.extraLarge,
+                    border = BorderStroke(1.dp, Color.White),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = Color.White,
+                        disabledContentColor = Color.White.copy(alpha = 0.8f)
+                    ),
+                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
                 ) {
-                    Text(
-                        text = "⭐ Recommended",
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onPrimary
-                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            Icons.Default.Star,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(Modifier.width(4.dp))
+                        Text(
+                            "Recommended",
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
             }
             Column(modifier = Modifier.padding(12.dp)) {

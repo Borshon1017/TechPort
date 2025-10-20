@@ -220,7 +220,7 @@ fun PurchaseItemCard(purchase: Purchase, onReportClick: () -> Unit) {
                     modifier = Modifier
                         .size(36.dp)
                         .clip(CircleShape)
-                        .background(Color(0xFFF0F0F0))
+                        .background(Color.White)
                         .clickable { onReportClick() },
                     contentAlignment = Alignment.Center
                 ) {
