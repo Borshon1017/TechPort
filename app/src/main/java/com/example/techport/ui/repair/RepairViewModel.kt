@@ -8,8 +8,9 @@ import androidx.lifecycle.viewModelScope
 import com.example.techport.data.Repair
 import com.example.techport.data.RepairRepository
 import com.example.techport.data.RepairStatus
+import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.ktx.analytics
-import com.google.firebase.analytics.ktx.logEvent
+import com.google.firebase.analytics.logEvent
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.google.firebase.ktx.Firebase
@@ -17,7 +18,7 @@ import kotlinx.coroutines.launch
 
 class RepairViewModel : ViewModel() {
     private val repository = RepairRepository()
-    private val analytics = Firebase.analytics
+    private val analytics: FirebaseAnalytics = Firebase.analytics
     private val crashlytics = FirebaseCrashlytics.getInstance()
     private val auth = FirebaseAuth.getInstance()
 
@@ -49,25 +50,6 @@ class RepairViewModel : ViewModel() {
                 }
 
                 result.fold(
-                    onSuccess = { repairs = it },
-                    onFailure = {
-                        errorMessage = it.message
-                        crashlytics.recordException(it)
-                    }
-                )
-            } finally {
-                isLoading = false
-            }
-        }
-    }
-
-    fun loadUserRepairs() {
-        val userId = auth.currentUser?.uid ?: return
-        viewModelScope.launch {
-            isLoading = true
-            errorMessage = null
-            try {
-                repository.getRepairsByUser(userId).fold(
                     onSuccess = { repairs = it },
                     onFailure = {
                         errorMessage = it.message
