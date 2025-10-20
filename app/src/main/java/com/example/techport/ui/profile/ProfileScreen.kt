@@ -228,8 +228,17 @@ fun LogoutDialog(onConfirm: () -> Unit, onDismiss: () -> Unit) {
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Cancel")
+            OutlinedButton(
+                onClick = onDismiss,
+                shape = MaterialTheme.shapes.extraLarge,
+                border = BorderStroke(1.dp, Color.LightGray),
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Black)
+            ) {
+                Text(
+                    "Cancel",
+                    fontWeight = androidx.compose.ui.text.font.FontWeight.Normal,
+                    style = MaterialTheme.typography.bodyMedium
+                )
             }
         }
     )

@@ -97,7 +97,7 @@ fun HomeScreen(
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Box(
                                     modifier = Modifier
-                                        .size(56.dp)
+                                        .size(51.dp)
                                         .graphicsLayer { translationY = -liftPx }
                                         .clickable(onClick = { /* future: navigate to profile */ })
                                         .drawBehind {

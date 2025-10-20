@@ -79,9 +79,11 @@ fun ProductDetailScreen(
                         onClick = {
                             viewModel.addToCart(product)
                             showAddedToast = true
+                            // navigate back to menu/home after adding to cart
+                            onBackClick()
                         },
                         modifier = Modifier
-                            .height(56.dp)
+                            .height(51.dp)
                             .shadow(
                                 elevation = 8.dp,
                                 spotColor = Color.Blue,
