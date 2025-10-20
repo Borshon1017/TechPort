@@ -29,7 +29,6 @@ fun RepairDetailScreen(
 ) {
     var showUpdateDialog by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
-    var showCancelDialog by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -59,17 +58,9 @@ fun RepairDetailScreen(
                             .padding(16.dp),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        if (repair.status == RepairStatus.PENDING || repair.status == RepairStatus.IN_PROGRESS) {
-                            OutlinedButton(
-                                onClick = { showCancelDialog = true },
-                                modifier = Modifier.weight(1f)
-                            ) {
-                                Text("Cancel Repair")
-                            }
-                        }
                         Button(
                             onClick = { showUpdateDialog = true },
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier.fillMaxWidth()
                         ) {
                             Text("Update Status")
                         }
@@ -294,12 +285,10 @@ fun RepairDetailScreen(
         UpdateStatusDialog(
             currentStatus = repair.status,
             onDismiss = { showUpdateDialog = false },
-            onConfirm = { newStatus, notes, cost ->
+            onConfirm = { newStatus ->
                 viewModel.updateRepairStatus(
                     repairId = repair.id,
                     newStatus = newStatus,
-                    technicianNotes = notes,
-                    actualCost = cost,
                     onSuccess = {
                         showUpdateDialog = false
                         onBackClick()
@@ -308,38 +297,6 @@ fun RepairDetailScreen(
                         showUpdateDialog = false
                     }
                 )
-            }
-        )
-    }
-
-    // Cancel Dialog
-    if (showCancelDialog) {
-        AlertDialog(
-            onDismissRequest = { showCancelDialog = false },
-            title = { Text("Cancel Repair") },
-            text = { Text("Are you sure you want to cancel this repair request?") },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        viewModel.updateRepairStatus(
-                            repairId = repair.id,
-                            newStatus = RepairStatus.CANCELLED,
-                            technicianNotes = "Cancelled by user",
-                            onSuccess = {
-                                showCancelDialog = false
-                                onBackClick()
-                            },
-                            onError = { showCancelDialog = false }
-                        )
-                    }
-                ) {
-                    Text("Cancel Repair")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showCancelDialog = false }) {
-                    Text("Go Back")
-                }
             }
         )
     }
@@ -382,11 +339,9 @@ fun RepairDetailScreen(
 fun UpdateStatusDialog(
     currentStatus: RepairStatus,
     onDismiss: () -> Unit,
-    onConfirm: (RepairStatus, String, Double?) -> Unit
+    onConfirm: (RepairStatus) -> Unit
 ) {
     var selectedStatus by remember { mutableStateOf(currentStatus) }
-    var notes by remember { mutableStateOf("") }
-    var cost by remember { mutableStateOf("") }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -410,35 +365,11 @@ fun UpdateStatusDialog(
                         Text(status.displayName)
                     }
                 }
-
-                // Technician Notes
-                OutlinedTextField(
-                    value = notes,
-                    onValueChange = { notes = it },
-                    label = { Text("Notes (Optional)") },
-                    modifier = Modifier.fillMaxWidth(),
-                    minLines = 2
-                )
-
-                // Actual Cost
-                OutlinedTextField(
-                    value = cost,
-                    onValueChange = { cost = it },
-                    label = { Text("Actual Cost (Optional)") },
-                    modifier = Modifier.fillMaxWidth(),
-                    prefix = { Text("$") }
-                )
             }
         },
         confirmButton = {
             Button(
-                onClick = {
-                    onConfirm(
-                        selectedStatus,
-                        notes,
-                        cost.toDoubleOrNull()
-                    )
-                }
+                onClick = { onConfirm(selectedStatus) }
             ) {
                 Text("Update")
             }

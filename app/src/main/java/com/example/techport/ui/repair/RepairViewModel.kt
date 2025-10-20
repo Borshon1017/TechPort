@@ -126,8 +126,6 @@ class RepairViewModel : ViewModel() {
     fun updateRepairStatus(
         repairId: String,
         newStatus: RepairStatus,
-        technicianNotes: String = "",
-        actualCost: Double? = null,
         onSuccess: () -> Unit,
         onError: (String) -> Unit
     ) {
@@ -139,8 +137,6 @@ class RepairViewModel : ViewModel() {
                     if (existingRepair != null) {
                         val updatedRepair = existingRepair.copy(
                             status = newStatus,
-                            technicianNotes = technicianNotes,
-                            actualCost = actualCost ?: existingRepair.actualCost,
                             completedAt = if (newStatus == RepairStatus.COMPLETED)
                                 System.currentTimeMillis() else null
                         )
