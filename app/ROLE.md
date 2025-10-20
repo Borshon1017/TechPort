@@ -29,3 +29,5 @@ Build note (local environment)
 If you'd like, I can:
 - Add an admin promotion UI (protected) to promote users from within the app.
 - Add unit/instrumentation tests for role-based UI behavior.
+
+

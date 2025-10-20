@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -50,6 +51,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -57,6 +60,9 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import kotlin.math.min
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.example.techport.data.Product
@@ -73,14 +79,66 @@ fun HomeScreen(
     Scaffold(
         topBar = {
             TopAppBar(
+                navigationIcon = {
+                    // vertically center the nav content to align with the app bar
+                    val currentUser = viewModel.currentUser
+                    val photoUrl = currentUser?.photoUrl?.toString()
+                    val liftPx = with(LocalDensity.current) { 6.dp.toPx() }
+                    Box(modifier = Modifier.fillMaxHeight(), contentAlignment = Alignment.CenterStart) {
+                        if (!photoUrl.isNullOrBlank()) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Box(modifier = Modifier
+                                    .size(50.dp)
+                                    .graphicsLayer { translationY = -liftPx }
+                                    .clickable(onClick = { /* future: navigate to profile */ })
+                                    .drawBehind {
+                                        // subtle blue glow: radial gradient behind the avatar
+                                        val radius = min(size.width, size.height) / 1.2f
+                                        val centerOffset = Offset(size.width / 2f, size.height / 2f)
+                                        drawCircle(
+                                            brush = Brush.radialGradient(
+                                                colors = listOf(Color(0x803497FF), Color.Transparent),
+                                                center = centerOffset,
+                                                radius = radius
+                                            ),
+                                            radius = radius,
+                                            center = centerOffset
+                                        )
+                                    }
+                                ) {
+                                    AsyncImage(
+                                        model = photoUrl,
+                                        contentDescription = "Profile",
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .clip(CircleShape),
+                                        contentScale = ContentScale.Crop
+                                    )
+                                }
+                                Spacer(modifier = Modifier.width(12.dp))
+                            }
+                        } else {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Box(modifier = Modifier
+                                    .size(56.dp)
+                                    .graphicsLayer { translationY = -liftPx }
+                                    .clip(CircleShape)
+                                    .background(Color.LightGray))
+                                Spacer(modifier = Modifier.width(12.dp))
+                            }
+                        }
+                    }
+                },
                 title = {
                     val currentUser = viewModel.currentUser
-                    Text(
-                        text = if (!currentUser?.displayName.isNullOrEmpty()) "Welcome back, ${currentUser.displayName}" else "TechPort",
-                        style = MaterialTheme.typography.headlineMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
-                    )
+                    Box(modifier = Modifier.fillMaxHeight(), contentAlignment = Alignment.CenterStart) {
+                        Text(
+                            text = currentUser?.displayName?.takeIf { it.isNotBlank() } ?: "TechPort",
+                            style = MaterialTheme.typography.headlineMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                    }
                 },
                 actions = {
                     if (viewModel.userRole == "admin") {
