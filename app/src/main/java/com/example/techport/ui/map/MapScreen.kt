@@ -4,9 +4,14 @@ import android.content.Intent
 import android.location.Location
 import android.net.Uri
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.*
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -99,11 +104,14 @@ fun MapScreen() {
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 itemsIndexed(demoShops) { i, s ->
-                    FilterChip(
-                        selected = selected == i,
+                    OutlinedButton(
                         onClick = { selected = i },
-                        label = { Text(s.name) }
-                    )
+                        shape = MaterialTheme.shapes.extraLarge,
+                        border = BorderStroke(1.dp, if (selected == i) Color.Black else Color.LightGray),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Black)
+                    ) {
+                        Text(s.name, style = MaterialTheme.typography.bodyMedium)
+                    }
                 }
             }
 
@@ -122,35 +130,44 @@ fun MapScreen() {
             Spacer(Modifier.height(12.dp))
 
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Button(
-                    onClick = {
-                        val src = myLoc?.let { LatLng(it.latitude, it.longitude) }
-                            ?: run { error = "Location unavailable"; return@Button }
-                        val dst = demoShops[selected].pos
-                        loading = true; error = null
-                        scope.launch {
-                            val res = fetchRoute(src, dst, directionsKey)
-                            if (res == null) {
-                                route = emptyList()
-                                distance = null
-                                duration = null
-                                error = "No route"
-                            } else {
-                                route = res.points
-                                distance = res.distanceText
-                                duration = res.durationText
-                                // focus camera on route end
-                                camera.animate(
-                                    CameraUpdateFactory.newLatLngZoom(dst, 14f),
-                                    600
-                                )
+                // Draw Route - styled like the login primary button (black, extraLarge, shadow)
+                Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
+                    Button(
+                        onClick = {
+                            val src = myLoc?.let { LatLng(it.latitude, it.longitude) }
+                                ?: run { error = "Location unavailable"; return@Button }
+                            val dst = demoShops[selected].pos
+                            loading = true; error = null
+                            scope.launch {
+                                val res = fetchRoute(src, dst, directionsKey)
+                                if (res == null) {
+                                    route = emptyList()
+                                    distance = null
+                                    duration = null
+                                    error = "No route"
+                                } else {
+                                    route = res.points
+                                    distance = res.distanceText
+                                    duration = res.durationText
+                                    // focus camera on route end
+                                    camera.animate(
+                                        CameraUpdateFactory.newLatLngZoom(dst, 14f),
+                                        600
+                                    )
+                                }
+                                loading = false
                             }
-                            loading = false
-                        }
-                    },
-                    modifier = Modifier.weight(1f)
-                ) { Text(if (loading) "Loading…" else "Draw Route") }
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(56.dp)
+                            .shadow(8.dp, shape = MaterialTheme.shapes.extraLarge),
+                        shape = MaterialTheme.shapes.extraLarge,
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.Black, contentColor = Color.White)
+                    ) { Text(if (loading) "Loading…" else "Draw Route") }
+                }
 
+                // Clear - default outlined button (no shadow)
                 OutlinedButton(
                     onClick = {
                         route = emptyList()
@@ -158,7 +175,10 @@ fun MapScreen() {
                         duration = null
                         error = null
                     },
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f).fillMaxWidth().height(56.dp),
+                    shape = MaterialTheme.shapes.extraLarge,
+                    border = BorderStroke(1.dp, Color.LightGray),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Black)
                 ) { Text("Clear") }
             }
 
@@ -167,7 +187,7 @@ fun MapScreen() {
                 Spacer(Modifier.height(8.dp))
                 val dst = demoShops[selected].pos
                 val context = LocalContext.current
-                Button(
+                OutlinedButton(
                     onClick = {
                         val gmmUri =
                             Uri.parse("google.navigation:q=${dst.latitude},${dst.longitude}&mode=d")
@@ -176,7 +196,10 @@ fun MapScreen() {
                         }
                         context.startActivity(intent)
                     },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth().height(56.dp),
+                    shape = MaterialTheme.shapes.extraLarge,
+                    border = BorderStroke(1.dp, Color.LightGray),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Black)
                 ) { Text("Start Journey in Google Maps") }
             }
 
