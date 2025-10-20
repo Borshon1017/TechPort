@@ -84,6 +84,10 @@ fun LoginScreen(
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                Text("Techport", style = MaterialTheme.typography.displayMedium, fontWeight = FontWeight.Bold, color = Color.Black)
+
+                Spacer(Modifier.height(16.dp))
+
                 Text("Welcome Back", style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold, color = Color.Black)
                 Text("Sign in to continue", style = MaterialTheme.typography.bodyLarge, color = Color.Gray)
 

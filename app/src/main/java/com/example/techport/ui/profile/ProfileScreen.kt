@@ -4,7 +4,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.border
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.lazy.LazyRow
@@ -81,17 +82,26 @@ fun ProfileScreen(onLogout: () -> Unit, viewModel: ProfileViewModel = viewModel(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        ProfileOption(
-            text = "Change Password",
-            icon = Icons.Default.Lock,
-            onClick = { showPasswordDialog = true }
-        )
+        // Keep minimal debug info: uid and email only
+        val currentUser = viewModel.auth.currentUser
+        Text("uid: ${currentUser?.uid ?: "<none>"}", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+        Text("email: ${currentUser?.email ?: "<none>"}", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+
+        if (viewModel.canChangePassword) {
+            ProfileOption(
+                text = "Change Password",
+                icon = Icons.Default.Lock,
+                onClick = { showPasswordDialog = true }
+            )
+        }
         ProfileOption(
             text = "Logout",
             icon = Icons.AutoMirrored.Filled.ExitToApp,
             onClick = { showLogoutDialog = true }
         )
     }
+
+    // Change Password visibility is controlled by the ViewModel (currently defaulted on)
 
     if (showLogoutDialog) {
         LogoutDialog(
@@ -105,14 +115,10 @@ fun ProfileScreen(onLogout: () -> Unit, viewModel: ProfileViewModel = viewModel(
 
     if (showPasswordDialog) {
         ChangePasswordDialog(
-            onConfirm = { password ->
-                viewModel.changePassword(password,
-                    onSuccess = { showPasswordDialog = false },
-                    onError = { showPasswordDialog = false })
+            onChangeRequested = { current, newPass, onSuccess, onError ->
+                viewModel.changePassword(current, newPass, onSuccess, onError)
             },
-            onDismiss = { showPasswordDialog = false },
-            newPassword = "",
-            onPasswordChange = {}
+            onDismiss = { showPasswordDialog = false }
         )
     }
 
@@ -246,12 +252,13 @@ fun LogoutDialog(onConfirm: () -> Unit, onDismiss: () -> Unit) {
 
 @Composable
 fun ChangePasswordDialog(
-    onConfirm: (String) -> Unit,
-    onDismiss: () -> Unit,
-    newPassword: String,
-    onPasswordChange: (String) -> Unit
+    onChangeRequested: (currentPassword: String, newPassword: String, onSuccess: () -> Unit, onError: (String) -> Unit) -> Unit,
+    onDismiss: () -> Unit
 ) {
-    var password by remember { mutableStateOf(newPassword) }
+    var current by remember { mutableStateOf("") }
+    var newPass by remember { mutableStateOf("") }
+    var confirm by remember { mutableStateOf("") }
+    var error by remember { mutableStateOf("") }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -259,25 +266,85 @@ fun ChangePasswordDialog(
         text = {
             Column {
                 OutlinedTextField(
-                    value = password,
-                    onValueChange = {
-                        password = it
-                        onPasswordChange(it)
-                    },
+                    value = current,
+                    onValueChange = { current = it },
+                    label = { Text("Current password") },
+                    visualTransformation = PasswordVisualTransformation(),
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = CircleShape,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = Color.Black,
+                        unfocusedBorderColor = Color.LightGray
+                    )
+                )
+
+                Spacer(Modifier.height(8.dp))
+
+                OutlinedTextField(
+                    value = newPass,
+                    onValueChange = { newPass = it },
                     label = { Text("New password") },
                     visualTransformation = PasswordVisualTransformation(),
                     singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = CircleShape,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = Color.Black,
+                        unfocusedBorderColor = Color.LightGray
+                    )
                 )
+
+                Spacer(Modifier.height(8.dp))
+
+                OutlinedTextField(
+                    value = confirm,
+                    onValueChange = { confirm = it },
+                    label = { Text("Confirm new password") },
+                    visualTransformation = PasswordVisualTransformation(),
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = CircleShape,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = Color.Black,
+                        unfocusedBorderColor = Color.LightGray
+                    )
+                )
+
+                if (error.isNotEmpty()) {
+                    Spacer(Modifier.height(8.dp))
+                    Text(error, color = MaterialTheme.colorScheme.error)
+                }
             }
         },
         confirmButton = {
-            Button(onClick = { onConfirm(password) }) {
-                Text("Change")
-            }
+            Button(
+                onClick = {
+                    error = when {
+                        current.isBlank() || newPass.isBlank() || confirm.isBlank() -> "All fields are required"
+                        newPass != confirm -> "Passwords do not match"
+                        else -> {
+                            // call into ViewModel and surface errors in this dialog
+                            onChangeRequested(current, newPass,
+                                { onDismiss() },
+                                { msg -> error = msg })
+                            ""
+                        }
+                    }
+                },
+                modifier = Modifier
+                    .shadow(8.dp, shape = MaterialTheme.shapes.extraLarge),
+                shape = MaterialTheme.shapes.extraLarge,
+                colors = ButtonDefaults.buttonColors(containerColor = Color.Black, contentColor = Color.White)
+            ) { Text("Change") }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Cancel") }
+            OutlinedButton(
+                onClick = onDismiss,
+                shape = MaterialTheme.shapes.extraLarge,
+                border = BorderStroke(1.dp, Color.LightGray),
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Black)
+            ) { Text("Cancel") }
         }
     )
 }
