@@ -140,7 +140,10 @@ class RepairViewModel : ViewModel() {
                             completedAt = if (newStatus == RepairStatus.COMPLETED)
                                 System.currentTimeMillis() else null
                         )
-                        updateRepair(updatedRepair, onSuccess, onError)
+                        updateRepair(updatedRepair, {
+                            loadRepairs() // Refresh the list after update
+                            onSuccess()
+                        }, onError)
                     } else {
                         onError("Repair not found")
                     }
@@ -166,7 +169,7 @@ class RepairViewModel : ViewModel() {
                     analytics.logEvent("repair_deleted") {
                         param("repair_id", repairId)
                     }
-                    loadRepairs()
+                    loadRepairs() // Refresh the list after delete
                     onSuccess()
                 },
                 onFailure = {

@@ -18,7 +18,7 @@ class RepairRepository {
                 emptyList()
             }
             Repair(
-                id = doc.getString("id") ?: "",
+                id = doc.id,
                 userId = doc.getString("userId") ?: "",
                 userName = doc.getString("userName") ?: "",
                 productId = doc.getString("productId") ?: "",
@@ -46,7 +46,6 @@ class RepairRepository {
             val repairWithId = repair.copy(id = docRef.id)
 
             val repairData = hashMapOf(
-                "id" to repairWithId.id,
                 "userId" to repairWithId.userId,
                 "userName" to repairWithId.userName,
                 "productId" to repairWithId.productId,
@@ -130,25 +129,16 @@ class RepairRepository {
         return try {
             val updatedRepair = repair.copy(updatedAt = System.currentTimeMillis())
 
-            val repairData = hashMapOf(
-                "id" to updatedRepair.id,
-                "userId" to updatedRepair.userId,
-                "userName" to updatedRepair.userName,
-                "productId" to updatedRepair.productId,
-                "productName" to updatedRepair.productName,
-                "productImageUrl" to updatedRepair.productImageUrl,
-                "issueDescription" to updatedRepair.issueDescription,
-                "issueImageUrls" to updatedRepair.issueImageUrls,
+            val repairData = mapOf(
                 "status" to updatedRepair.status.name,
                 "estimatedCost" to updatedRepair.estimatedCost,
                 "actualCost" to updatedRepair.actualCost,
                 "technicianNotes" to updatedRepair.technicianNotes,
-                "createdAt" to updatedRepair.createdAt,
                 "updatedAt" to updatedRepair.updatedAt,
                 "completedAt" to updatedRepair.completedAt
             )
 
-            repairsCollection.document(repair.id).set(repairData).await()
+            repairsCollection.document(repair.id).update(repairData).await()
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)
