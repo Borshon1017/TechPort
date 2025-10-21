@@ -166,7 +166,7 @@ fun AboutScreen(onBackClick: () -> Unit) {
             Spacer(modifier = Modifier.height(4.dp))
 
             Text(
-                text = "Naomi Nketsiah · and the TechPort collaborators",
+                text = "Naomi Nketsiah · Borshon Alfred Goles · David Chiemerie Ekweanua · Umair Atique",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center
