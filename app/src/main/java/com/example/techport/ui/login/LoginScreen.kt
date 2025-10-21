@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
@@ -31,6 +32,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -58,8 +60,9 @@ import com.example.techport.ui.theme.TechPOrtTheme
 @Composable
 fun LoginScreen(
     onLogin: (email: String, password: String) -> Unit,
+    onRegister: () -> Unit = {},
+    onAbout: () -> Unit = {},  // ← ADDED THIS
     onForgotPassword: () -> Unit = {},
-    onSignUp: () -> Unit = {},
     onGoogleLogin: () -> Unit = {}
 ) {
     var email by remember { mutableStateOf("") }
@@ -201,10 +204,36 @@ fun LoginScreen(
 
                 // Sign Up
                 val annotatedText = buildAnnotatedString {
-                    withStyle(style = SpanStyle(color = Color.Gray)) { append("Don\'t have an account? ") }
+                    withStyle(style = SpanStyle(color = Color.Gray)) { append("Don't have an account? ") }
                     withStyle(style = SpanStyle(color = Color.Black, fontWeight = FontWeight.Bold)) { append("Sign up") }
                 }
-                Text(text = annotatedText, modifier = Modifier.clickable { onSignUp() })
+                Text(text = annotatedText, modifier = Modifier.clickable { onRegister() })
+
+                Spacer(Modifier.height(16.dp))
+
+                //  ABOUT LINK - ADDED HERE
+                TextButton(
+                    onClick = onAbout,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Icon(
+                            Icons.Default.Info,
+                            contentDescription = "About",
+                            modifier = Modifier.size(16.dp),
+                            tint = Color.Gray
+                        )
+                        Spacer(Modifier.width(4.dp))
+                        Text(
+                            text = "About TechPort",
+                            color = Color.Gray,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+                }
             }
         }
     }

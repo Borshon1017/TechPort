@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.example.techport.R
 import com.example.techport.ui.login.authy.AuthEvent
 import com.example.techport.ui.login.authy.AuthViewModel
@@ -22,12 +23,13 @@ import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.common.api.CommonStatusCodes
 import kotlinx.coroutines.launch
 
-@Suppress("DEPRECATION") // Suppress warnings for Google Identity library
+@Suppress("DEPRECATION")
 @Composable
 fun LoginRoute(
     onLoginSuccess: () -> Unit,
-    onForgotPassword: () -> Unit = {},
-    onSignUp: () -> Unit
+    onForgotPassword: () -> Unit,
+    onSignUp: () -> Unit,
+    onAbout: () -> Unit = {}   // ← keep this
 ) {
     val vm: AuthViewModel = viewModel()
     val host = remember { SnackbarHostState() }
@@ -36,7 +38,6 @@ fun LoginRoute(
     var showReset by remember { mutableStateOf(false) }
     var resetEmail by remember { mutableStateOf("") }
 
-    // --- Google sign-in setup using the new Identity library ---
     val context = LocalContext.current
     val oneTapClient = remember { Identity.getSignInClient(context) }
     val signInIntentRequest = remember {
@@ -54,38 +55,27 @@ fun LoginRoute(
                 val idToken = credential.googleIdToken
                 if (idToken != null) {
                     vm.loginWithGoogle(idToken)
-                } else {
-                    scope.launch { host.showSnackbar("Google sign-in failed: No ID token found.") }
-                }
+                } else scope.launch { host.showSnackbar("Google sign-in failed: No ID token found.") }
             } catch (e: ApiException) {
-                when (e.statusCode) {
-                    CommonStatusCodes.CANCELED -> {
-                        scope.launch { host.showSnackbar("Google sign-in canceled.") }
-                    }
-                    else -> {
-                        Log.e("LoginRoute", "Google sign-in credential error", e)
-                        scope.launch { host.showSnackbar("Could not get credential from result: ${e.localizedMessage}") }
-                    }
+                val message = when (e.statusCode) {
+                    CommonStatusCodes.CANCELED -> "Google sign-in canceled."
+                    else -> "Error: ${e.localizedMessage}"
                 }
+                scope.launch { host.showSnackbar(message) }
             }
-        } else {
-             scope.launch { host.showSnackbar("Google sign-in failed.") }
-        }
+        } else scope.launch { host.showSnackbar("Google sign-in failed.") }
     }
-
-    // --- end Google setup ---
 
     LaunchedEffect(Unit) {
         vm.events.collect { ev ->
             when (ev) {
-                is AuthEvent.Loading -> host.currentSnackbarData?.dismiss()
                 is AuthEvent.Success -> onLoginSuccess()
-                is AuthEvent.Error   -> scope.launch { host.showSnackbar(ev.message) }
-                is AuthEvent.Info    -> {
+                is AuthEvent.Error -> scope.launch { host.showSnackbar(ev.message) }
+                is AuthEvent.Info -> {
                     scope.launch { host.showSnackbar(ev.message) }
                     showReset = false
-                    resetEmail = ""
                 }
+                else -> {}
             }
         }
     }
@@ -93,29 +83,20 @@ fun LoginRoute(
     Scaffold(snackbarHost = { SnackbarHost(hostState = host) }) { padding ->
         Box(Modifier.padding(padding)) {
             LoginScreen(
-                onLogin = { email, password ->
-                    vm.login(email, password)
-                },
+                onLogin = { email, pass -> vm.login(email, pass) },
                 onForgotPassword = {
                     resetEmail = ""
                     showReset = true
                 },
-                onSignUp = onSignUp,
+                onRegister = onSignUp,
+                onAbout = onAbout,
                 onGoogleLogin = {
                     oneTapClient.getSignInIntent(signInIntentRequest)
                         .addOnSuccessListener { pendingIntent ->
-                            try {
-                                // Correctly build the IntentSenderRequest from the PendingIntent's IntentSender
-                                val intentSenderRequest =
-                                    IntentSenderRequest.Builder(pendingIntent.intentSender).build()
-                                googleLauncher.launch(intentSenderRequest)
-                            } catch (e: Exception) {
-                                Log.e("LoginRoute", "Failed to launch Google Sign-In intent.", e)
-                                scope.launch { host.showSnackbar("Couldn't start Google sign-in: ${e.localizedMessage}") }
-                            }
+                            googleLauncher.launch(IntentSenderRequest.Builder(pendingIntent.intentSender).build())
                         }
                         .addOnFailureListener { e ->
-                            Log.e("LoginRoute", "Google Sign-In get intent failed.", e)
+                            Log.e("LoginRoute", "Google sign-in intent failed", e)
                             scope.launch { host.showSnackbar("Google sign-in failed: ${e.localizedMessage}") }
                         }
                 }
@@ -125,7 +106,7 @@ fun LoginRoute(
 
     if (showReset) {
         AlertDialog(
-            onDismissRequest = { showReset = false; resetEmail = "" },
+            onDismissRequest = { showReset = false },
             title = { Text("Reset password") },
             text = {
                 OutlinedTextField(
@@ -137,14 +118,10 @@ fun LoginRoute(
                 )
             },
             confirmButton = {
-                TextButton(onClick = { vm.resetPassword(resetEmail.trim()) }) {
-                    Text("Send link")
-                }
+                TextButton(onClick = { vm.resetPassword(resetEmail.trim()) }) { Text("Send link") }
             },
             dismissButton = {
-                TextButton(onClick = { showReset = false; resetEmail = "" }) {
-                    Text("Cancel")
-                }
+                TextButton(onClick = { showReset = false }) { Text("Cancel") }
             }
         )
     }

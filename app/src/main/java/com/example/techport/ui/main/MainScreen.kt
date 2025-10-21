@@ -1,9 +1,13 @@
 package com.example.techport.ui.main
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.FastOutSlowInEasing
-import com.example.techport.ui.repair.RepairNavigation
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.with
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -39,17 +43,23 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.techport.NavItem
 import com.example.techport.ui.history.HistoryNavigation
 import com.example.techport.ui.home.HomeNavigation
+import com.example.techport.ui.home.HomeViewModel
 import com.example.techport.ui.map.MapScreen
 import com.example.techport.ui.profile.ProfileScreen
+import com.example.techport.ui.repair.RepairNavigation
 import com.example.techport.ui.theme.TechPOrtTheme
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.techport.ui.home.HomeViewModel
 
+@OptIn(ExperimentalAnimationApi::class)
 @Composable
-fun MainScreen(onLogout: () -> Unit, viewModel: HomeViewModel = viewModel()) {
+fun MainScreen(
+    onLogout: () -> Unit,
+    onAbout: () -> Unit = {},  // ✅ Added callback for About page
+    viewModel: HomeViewModel = viewModel()
+) {
     val isAdmin = viewModel.userRole == "admin"
 
     val navItems = remember(isAdmin) {
@@ -64,21 +74,38 @@ fun MainScreen(onLogout: () -> Unit, viewModel: HomeViewModel = viewModel()) {
             NavItem("Profile", Icons.Default.Person, "profile")
         )
     }
+
     var selectedItem by remember { mutableStateOf(navItems.first()) }
 
     Scaffold(
         bottomBar = {
-            BottomNavBar(navItems = navItems, selectedItem = selectedItem) { selectedItem = it }
+            BottomNavBar(
+                navItems = navItems,
+                selectedItem = selectedItem
+            ) { selectedItem = it }
         },
         containerColor = Color.White.copy(alpha = 0.05f)
     ) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)) {
-            when (selectedItem.route) {
-                "home" -> HomeNavigation()
-                "repairs" -> RepairNavigation()
-                "history" -> HistoryNavigation()
-                "map" -> MapScreen()
-                "profile" -> ProfileScreen(onLogout = onLogout)
+
+            // ✅ Animated transition when switching bottom tabs
+            AnimatedContent(
+                targetState = selectedItem.route,
+                transitionSpec = {
+                    fadeIn(animationSpec = tween(300)) with fadeOut(animationSpec = tween(300))
+                },
+                label = "animatedContent"
+            ) { route ->
+                when (route) {
+                    "home" -> HomeNavigation()
+                    "repairs" -> RepairNavigation()
+                    "history" -> HistoryNavigation()
+                    "map" -> MapScreen()
+                    "profile" -> ProfileScreen(
+                        onLogout = onLogout,
+                        onAbout = onAbout   // ✅ Connect About action here
+                    )
+                }
             }
         }
     }
@@ -92,7 +119,9 @@ fun BottomNavBar(
 ) {
     Box(modifier = Modifier.padding(start = 24.dp, end = 24.dp, bottom = 24.dp, top = 8.dp)) {
         Surface(
-            modifier = Modifier.fillMaxWidth().height(64.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(64.dp),
             shape = CircleShape,
             color = Color.Black,
             shadowElevation = 8.dp
@@ -109,6 +138,7 @@ fun BottomNavBar(
             )
 
             Box(modifier = Modifier.fillMaxSize()) {
+                // ✅ Animated white background under selected icon
                 Box(
                     modifier = Modifier
                         .offset(x = indicatorOffset)
